@@ -1,0 +1,143 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Problem: 3775. Reverse Words With Same Vowel Count
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 Link: https://leetcode.com/problems/reverse-words-with-same-vowel-count/
+🏷️ Difficulty: Medium
+📅 Contest: LeetCode Biweekly Contest 145
+⏱️ Time Taken: 15 minutes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given a string of words, reverse each word that has the SAME number of vowels
+as the FIRST word. The first word itself is never reversed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strategy: String Parsing + Vowel Counting + Conditional Reversal
+
+1️⃣ Split the sentence into individual words using stringstream
+2️⃣ Count vowels in the first word (this is the target count)
+3️⃣ For each subsequent word:
+   • Count its vowels
+   • If count matches first word → reverse it
+   • Otherwise → keep it as is
+4️⃣ Join all words back with spaces
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input:  s = "hello world code"
+
+Step 1: Split into words
+        ["hello", "world", "code"]
+        
+Step 2: Count vowels in first word "hello"
+        Vowels: e, o → count = 2
+        
+Step 3: Process each word
+        • "hello" → first word, don't reverse → "hello"
+        • "world" → vowels: o → count = 1 ≠ 2 → "world"
+        • "code"  → vowels: o, e → count = 2 = 2 → reverse → "edoc"
+        
+Step 4: Join with spaces
+        "hello world edoc"
+
+Output: "hello world edoc"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity:  O(n * m)
+   └─ n = number of words
+   └─ m = average length of each word
+   └─ We iterate through each word and count vowels
+   
+💾 Space Complexity: O(n * m)
+   └─ Storing all words in vector
+   └─ Building result string
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+    // 🔍 Helper function: Count vowels in a string
+    int vowelCount(string s) {
+        int count = 0;
+        for(char c : s) {
+            // Check if character is a vowel (lowercase only in this problem)
+            if(c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+public:
+    string reverseWords(string s) {
+        // 📝 Step 1: Split sentence into words
+        vector<string> words;
+        stringstream ss(s);
+        string word;
+        while(ss >> word) {
+            words.push_back(word);
+        }
+        
+        // 🎯 Step 2: Get target vowel count from first word
+        string firstWord = words[0];
+        int targetVowelCount = vowelCount(firstWord);
+        
+        // 🔄 Step 3: Reverse words with matching vowel count
+        // (Skip first word - index 0)
+        for(int i = 1; i < words.size(); i++) {
+            if(vowelCount(words[i]) == targetVowelCount) {
+                // Reverse this word
+                reverse(words[i].begin(), words[i].end());
+            }
+        }
+        
+        // 🔗 Step 4: Join words back with spaces
+        string ans;
+        for(int i = 0; i < words.size(); i++) {
+            if(i > 0) ans += " ";  // Add space before each word except first
+            ans += words[i];
+        }
+        
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Pattern Recognition: String manipulation + conditional processing
+🔑 Trick: Use stringstream for clean word splitting
+⚠️ Edge Case: First word is never reversed (start loop from i=1)
+🎯 Optimization: Could use unordered_set for vowel checking (O(1) lookup)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 Alternative Optimization
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For faster vowel checking:
+
+unordered_set<char> vowels = {'a', 'e', 'i', 'o', 'u'};
+int vowelCount(string s) {
+    int count = 0;
+    for(char c : s) {
+        if(vowels.count(c)) count++;
+    }
+    return count;
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
