@@ -1,0 +1,171 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Problem: 3776. Minimum Moves to Balance Circular Array
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 Link: https://leetcode.com/problems/minimum-moves-to-balance-circular-array/
+🏷️ Difficulty: Hard
+📅 Contest: LeetCode Weekly Contest 480
+⏱️ Time Taken: 35 minutes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given a circular array where elements can be positive, negative, or zero:
+- You can move 1 unit from one position to an adjacent position
+- Each move costs the distance traveled
+- Goal: Make all elements non-negative
+- Return minimum total moves, or -1 if impossible
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strategy: Greedy + Circular Array Simulation
+
+Key Insights:
+1️⃣ If total sum < 0 → impossible (not enough positive values)
+2️⃣ If no negative values → already balanced, return 0
+3️⃣ Find any negative position and fill it greedily from nearest neighbors
+
+Algorithm:
+1️⃣ Check if sum of all elements ≥ 0 (feasibility check)
+2️⃣ Find any position with negative value (culprit)
+3️⃣ Expand outward in circular manner:
+   • At distance d, check positions (culprit-d) and (culprit+d)
+   • Take available positive values from both sides
+   • Cost = distance × units_moved
+4️⃣ Repeat until culprit position becomes non-negative
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input:  balance = [3, -2, 4, 1]
+
+Step 1: Check sum = 3 + (-2) + 4 + 1 = 6 ≥ 0 ✅ (possible)
+
+Step 2: Find culprit = index 1 (value = -2)
+
+Step 3: Expand and fill:
+  Distance 1:
+    • Left:  index 0, value = 3
+    • Right: index 2, value = 4
+    • Total available = 3 + 4 = 7
+    • Need = 2
+    • Take 2 units (cost = 1 × 2 = 2)
+    • balance[1] becomes 0 ✅
+    
+Total moves: 2
+
+Output: 2
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity:  O(n²)
+   └─ Worst case: need to check all distances (n iterations)
+   └─ Each iteration does O(1) work
+   └─ Total: O(n) for sum check + O(n²) for filling
+   
+💾 Space Complexity: O(1)
+   └─ Only using constant extra variables
+   └─ Modifying input array in-place
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    typedef long long ll;
+    
+    long long minMoves(vector<int>& balance) {
+        int n = balance.size();
+        
+        // 📊 Step 1: Check feasibility - is total sum non-negative?
+        ll sum = 0;
+        ll culprit = -1;  // Index of any negative value
+        
+        for(int i = 0; i < n; i++) {
+            sum += balance[i];
+            if(balance[i] < 0) {
+                culprit = i;  // Remember any negative position
+            }
+        }
+        
+        // ❌ If sum < 0, impossible to balance
+        if(sum < 0) return -1;
+        
+        // ✅ If no negative values found, already balanced
+        if(culprit == -1) return 0;
+        
+        // 🎯 Step 2: Greedily fill the negative position
+        ll moves = 0;
+        ll distance = 1;  // Start checking neighbors at distance 1
+        
+        while(balance[culprit] < 0) {
+            // 🔄 Calculate circular indices for left and right neighbors
+            ll left = (culprit - distance + n) % n;
+            ll right = (culprit + distance) % n;
+            
+            // 💰 Calculate total available from both sides
+            ll total = balance[left] + balance[right];
+            
+            // ⚠️ Edge case: if left == right (distance wraps around)
+            // Don't count the same position twice
+            if(left == right) {
+                total -= balance[left];
+            }
+            
+            // 📦 Calculate how much we need and can take
+            ll need = -balance[culprit];  // How much deficit to fill
+            ll taken = min(need, total);  // Take minimum of need and available
+            
+            // 💸 Add cost: distance × units moved
+            moves += distance * taken;
+            
+            // 🔧 Update the culprit position
+            balance[culprit] += taken;
+            
+            // 📏 Move to next distance level
+            distance++;
+        }
+        
+        return moves;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Pattern: Greedy + Circular Array + Two-Pointer Expansion
+🔑 Trick: Use modulo arithmetic for circular indexing: (i + n) % n
+⚠️ Edge Case: When left == right (same position due to wraparound)
+🎯 Optimization: Only need to fix one negative position (greedy works)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 Why This Works
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The greedy approach works because:
+1. If sum ≥ 0, there's always enough positive value to distribute
+2. Taking from nearest neighbors minimizes cost (distance × units)
+3. Fixing one negative position doesn't create new problems elsewhere
+4. Circular property ensures we can always reach all positions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 Alternative Approaches
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Fix ALL negative positions simultaneously (more complex)
+2. Use prefix sum approach (similar complexity)
+3. Binary search on answer (overkill for this problem)
+
+Current greedy approach is optimal for this problem! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
