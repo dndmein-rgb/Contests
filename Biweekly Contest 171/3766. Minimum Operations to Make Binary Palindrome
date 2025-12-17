@@ -40,7 +40,7 @@ Key observations:
 
 Strategy:
 
-1. Precompute **all binary-palindromic numbers** up to a fixed upper bound
+1. Precompute **all binary-palindromic numbers** up to a fixed upper bound (5000)
 2. For each number in `nums`, try all precomputed palindromes
 3. Pick the minimum absolute difference
 
@@ -59,7 +59,7 @@ To check whether a number is a binary palindrome:
 This avoids bit-math gymnastics and keeps the logic readable.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🧠 Why the Upper Bound = 10000
+🧠 Why the Upper Bound = 5000
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 The constraints guarantee that:
@@ -67,9 +67,9 @@ The constraints guarantee that:
 * `nums[i]` values are small enough
 * The closest binary palindrome will not be very far away
 
-Precomputing palindromes up to `10000`:
+Precomputing palindromes up to `5000`:
 
-* Covers all practical cases
+* Covers all practical cases in this contest
 * Produces only a few hundred palindromes
 * Keeps the brute-force phase fast
 
@@ -97,8 +97,8 @@ return b == s;
 vector<int> minOperations(vector<int>& nums) {
     vector<int> pals;
 
-    // Precompute all binary palindromes up to 10000
-    for (int i = 1; i <= 10000; i++) {
+    // Precompute all binary palindromes up to 5000
+    for (int i = 1; i <= 5000; i++) {
         if (isPalindrome(i)) {
             pals.push_back(i);
         }
@@ -126,11 +126,11 @@ vector<int> minOperations(vector<int>& nums) {
 Let:
 
 * `N` = size of `nums`
-* `P` = number of binary palindromes ≤ 10000 (small constant)
+* `P` = number of binary palindromes ≤ 5000 (small constant)
 
 Precomputation:
 
-* O(10000 × log(10000)) for binary conversion
+* O(5000 × log(5000)) for binary conversion
 
 Main Computation:
 
