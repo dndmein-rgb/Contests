@@ -1,0 +1,158 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Biweekly Contest 171
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3766. Minimum Operations to Make Binary Palindrome
+📌 Platform: LeetCode
+🏷️ Difficulty: Medium
+🏆 Topics: Bit Manipulation, Brute Force, Precomputation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You are given an integer array `nums`.
+
+For each element `nums[i]`, you may perform the following operation any number of times:
+
+* Increase the number by 1
+* Decrease the number by 1
+
+A number is called a **binary palindrome** if its binary representation (without leading zeros) reads the same forward and backward.
+
+Your task is to return an array `ans` where:
+
+* `ans[i]` is the **minimum number of operations** required to convert `nums[i]` into **any** binary-palindromic number.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a classic **precompute + brute-force matching** problem.
+
+Key observations:
+
+* The operation cost is absolute difference: `|num - target|`
+* We don’t care *which* palindrome we reach, only the closest one
+* The domain of valid binary palindromes is small
+
+Strategy:
+
+1. Precompute **all binary-palindromic numbers** up to a fixed upper bound
+2. For each number in `nums`, try all precomputed palindromes
+3. Pick the minimum absolute difference
+
+No DP. No greedy tricks. Just controlled brute force.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Binary Palindrome Check
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+To check whether a number is a binary palindrome:
+
+* Extract its binary representation bit by bit
+* Store it as a string
+* Compare the string with its reverse
+
+This avoids bit-math gymnastics and keeps the logic readable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Why the Upper Bound = 10000
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The constraints guarantee that:
+
+* `nums[i]` values are small enough
+* The closest binary palindrome will not be very far away
+
+Precomputing palindromes up to `10000`:
+
+* Covers all practical cases
+* Produces only a few hundred palindromes
+* Keeps the brute-force phase fast
+
+If constraints were larger, we would tighten this bound or generate palindromes on demand.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+bool isPalindrome(int x) {
+string b = "";
+while (x > 0) {
+b.push_back((x & 1) + '0');
+x >>= 1;
+}
+string s = b;
+reverse(s.begin(), s.end());
+return b == s;
+}
+
+```
+vector<int> minOperations(vector<int>& nums) {
+    vector<int> pals;
+
+    // Precompute all binary palindromes up to 10000
+    for (int i = 1; i <= 10000; i++) {
+        if (isPalindrome(i)) {
+            pals.push_back(i);
+        }
+    }
+
+    vector<int> ans;
+    for (int num : nums) {
+        int best = INT_MAX;
+        for (int x : pals) {
+            best = min(best, abs(num - x));
+        }
+        ans.push_back(best);
+    }
+    return ans;
+}
+```
+
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let:
+
+* `N` = size of `nums`
+* `P` = number of binary palindromes ≤ 10000 (small constant)
+
+Precomputation:
+
+* O(10000 × log(10000)) for binary conversion
+
+Main Computation:
+
+* O(N × P)
+
+Overall Time Complexity:
+
+* O(N × P)
+
+Space Complexity:
+
+* O(P) for storing palindromes
+* O(N) for the answer array
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* Absolute difference makes this a nearest-neighbor problem
+* Precomputation completely kills the need for optimization tricks
+* Binary palindromes are rare → brute force is safe
+* Clean solution beats clever-but-fragile bit hacks here
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
