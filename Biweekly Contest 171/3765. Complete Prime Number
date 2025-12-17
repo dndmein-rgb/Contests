@@ -1,0 +1,160 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Biweekly Contest 171
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: Q3765. Complete Prime Number
+📌 Platform: LeetCode
+🏷️ Difficulty: Easy
+🏆 Topics: Math, Number Theory, String Manipulation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You are given an integer `num`.
+
+A number is called a **Complete Prime Number** if:
+
+* Every **prefix** of its decimal representation is prime
+* Every **suffix** of its decimal representation is prime
+
+For a number with `n` digits:
+
+* Prefixes: first 1 digit, first 2 digits, ..., all n digits
+* Suffixes: last 1 digit, last 2 digits, ..., all n digits
+
+Return `true` if `num` is a complete prime number, otherwise `false`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Brute force with pruning. No fancy tricks required.
+
+Steps:
+
+1. Convert the number to a string so prefixes and suffixes are easy to extract
+2. For each length `k` from `1` to `n`:
+
+   * Extract prefix of length `k`
+   * Extract suffix of length `k`
+3. Check if both are prime
+4. If **any** prefix or suffix is not prime → return `false`
+5. If all checks pass → return `true`
+
+Key observation:
+
+* As soon as one prefix/suffix fails, the number is invalid
+* Primality checking dominates runtime
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Primality Test
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Optimized trial division:
+
+* Numbers < 2 → not prime
+* Handle 2 separately
+* Reject even numbers
+* Check divisibility up to √n using odd divisors only
+
+This is efficient enough because:
+
+* Prefixes and suffixes are at most the size of `num`
+* Constraints are small
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: num = 233
+
+Prefixes:
+
+* 2   → prime
+* 23  → prime
+* 233 → prime
+
+Suffixes:
+
+* 3   → prime
+* 33  → NOT prime ❌
+
+Result: `false`
+
+The check short-circuits early when `33` fails.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+bool isPrime(int n) {
+if (n < 2) return false;
+if (n == 2) return true;
+if (n % 2 == 0) return false;
+
+```
+    for (int i = 3; 1LL * i * i <= n; i += 2) {
+        if (n % i == 0) return false;
+    }
+    return true;
+}
+```
+
+public:
+bool completePrime(int num) {
+string s = to_string(num);
+int n = s.size();
+
+```
+    for (int k = 1; k <= n; k++) {
+        int prefix = stoi(s.substr(0, k));
+        int suffix = stoi(s.substr(n - k));
+
+        if (!isPrime(prefix) || !isPrime(suffix)) {
+            return false;
+        }
+    }
+    return true;
+}
+```
+
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let:
+
+* `d` = number of digits in `num`
+* `V` = numeric value of `num`
+
+Time Complexity:
+
+* For each digit length `k` (1 → d):
+
+  * Two primality checks
+  * Each primality check: O(√V)
+
+Overall: O(d × √V)
+
+Space Complexity:
+
+* O(d) for string conversion
+* O(1) auxiliary space otherwise
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* Early exit keeps runtime low in practice
+* String slicing is cleaner than arithmetic prefix/suffix extraction here
+* Further optimization (precomputing primes) is unnecessary for constraints
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
