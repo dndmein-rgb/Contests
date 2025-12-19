@@ -6,81 +6,122 @@
 🎯 Problem: Q3756. Concatenate Non-Zero Digits and Multiply by Sum II
 📌 Platform: LeetCode
 🏷️ Difficulty: Hard
-🏆 Topics: Math, String, Simulation
+🏆 Topics: Prefix Sum, Binary Search, Math, Rolling Hash
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📖 Problem Summary
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Given a string `s` representing a large integer and multiple queries `queries[i] = [l, r]`:
-1. For each query, consider the substring `s[l...r]`.
-2. Form an integer `x` by concatenating all **non-zero** digits in that range.
-3. Calculate `sum`, the sum of those non-zero digits.
-4. Return `(x * sum) % (10^9 + 7)`.
+Given a string `s` representing a large integer and multiple queries `[L, R]`:
+1. Form integer `x` by concatenating non-zero digits of `s[L...R]`.
+2. Calculate `sum` of these non-zero digits.
+3. Return `(x * sum) % (10^9 + 7)`.
 
-Note: This version uses a direct simulation approach which is easy to understand but results in **TLE (Time Limit Exceeded)** for large inputs.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 Approach (Brute Force / Simulation)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-The logic follows the problem statement step-by-step for every query:
-
-1. **Iterate through Queries**: For every query `[l, r]`, process the substring.
-2. **Right-to-Left Traversal**: To build the number `x` without string concatenation:
-   * Start from the end of the range (`r`) and move towards `l`.
-   * Maintain a `final` multiplier (power of 10) that only increases when a non-zero digit is encountered.
-3. **Modular Arithmetic**: Apply `% 1e9 + 7` at each addition and multiplication step to prevent integer overflow.
-4. **Edge Case**: If no non-zero digits are found, the result is `0`.
+With $N, Q \le 10^5$, the challenge is to move from a linear scan per query to a logarithmic or constant time query.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🧠 Algorithm Walkthrough
+❌ Version 1: Brute Force (TLE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Example: `s = "1024"`, query `[0, 3]`
-
-1.  **Digit 4**: `sum = 4`, `x = 4`, `multiplier = 10`.
-2.  **Digit 2**: `sum = 6`, `x = (2 * 10) + 4 = 24`, `multiplier = 100`.
-3.  **Digit 0**: Skip.
-4.  **Digit 1**: `sum = 7`, `x = (1 * 100) + 24 = 124`.
-
-Final result: `(124 * 7) % MOD = 868`.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚙️ Implementation
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This approach iterates through the range for every single query. 
+Complexity: O(Q * N) — This will exceed the time limit.
 */
 
-class Solution {
+class SolutionTLE {
     typedef long long ll;
     int mod = 1e9 + 7;
-
 public:
     long long solved(string &s, int l, int r) {
         ll ans = 0;
         ll sum = 0;
         ll final = 1;
-        
-        // Traverse the range backwards to build the number correctly
         for (int i = r; i >= l; i--) {
             int digit = s[i] - '0';
             if (digit != 0) {
                 sum += digit;
-                // Build x: (digit * 10^k) + previous_ans
                 ans = (digit * final + ans) % mod;
-                // Only increase power of 10 for non-zero digits
                 final = (final * 10) % mod;
             }
         }
         return (ans % mod) * (sum % mod) % mod;
     }
-
+    
     vector<int> sumAndMultiply(string s, vector<vector<int>>& queries) {
         vector<int> ans;
         for (auto &q : queries) {
-            int x = q[0];
-            int y = q[1];
-            ans.push_back(solved(s, x, y));
+            ans.push_back(solved(s, q[0], q[1]));
+        }
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Version 2: Optimized (Binary Search + Prefix Sums)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Approach:
+1. Filter out zeros: Store non-zero digits in `d` and their original indices in `p`.
+2. Prefix Arrays: 
+   - `ps`: Prefix sum of digits.
+   - `pv`: Prefix value of the concatenated number (like a rolling hash).
+   - `pw`: Precomputed powers of 10.
+3. Query: Use `lower_bound` on `p` to find which non-zero digits fall in `[L, R]`.
+4. Math: Use the prefix value formula to extract the range value in O(1).
+
+Complexity: O(N + Q log N)
+*/
+
+class Solution {
+public:
+    vector<int> sumAndMultiply(string s, vector<vector<int>>& q) {
+        const int M = 1000000007;
+        int n = s.size();
+        vector<int> p, d;
+        
+        // Extract non-zero digits and their positions
+        for (int i = 0; i < n; i++) {
+            if (s[i] != '0') {
+                p.push_back(i);
+                d.push_back(s[i] - '0');
+            }
+        } 
+
+        int m = d.size(), k = q.size();
+        vector<int> ps(m), pv(m), pw(m + 1, 1), ans(k);
+
+        if (m) {
+            ps[0] = pv[0] = d[0];
+            for (int i = 1; i < m; i++) {
+                ps[i] = ps[i - 1] + d[i];
+                pv[i] = (int)(((long long)pv[i - 1] * 10 + d[i]) % M);
+            }
+            for (int i = 1; i <= m; i++) {
+                pw[i] = (int)((long long)pw[i - 1] * 10 % M);
+            }
+        }
+
+        for (int i = 0; i < k; i++) {
+            int L = q[i][0], R = q[i][1];
+            
+            // Binary search to find the range of non-zero indices
+            int a = lower_bound(p.begin(), p.end(), L) - p.begin();
+            int b = upper_bound(p.begin(), p.end(), R) - p.begin() - 1;
+
+            if (a > b) {
+                ans[i] = 0;
+                continue;
+            }
+
+            // Sum of digits in range [a, b]
+            long long s2 = ps[b] - (a ? ps[a - 1] : 0);
+            
+            // Value x in range [a, b] using Rolling Hash subtraction logic
+            long long v2;
+            if (a == 0) v2 = pv[b];
+            else v2 = (pv[b] - (long long)pv[a - 1] * pw[b - a + 1] % M + M) % M;
+
+            ans[i] = (int)((v2 * (s2 % M)) % M);
         }
         return ans;
     }
@@ -91,21 +132,18 @@ public:
 ⚡ Complexity Analysis
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Let `N` be the length of string `s` and `Q` be the number of queries.
-
-Time Complexity:
-* **O(Q × N)**: In the worst case, every query spans the entire string. With $Q, N \approx 10^5$, this leads to $10^{10}$ operations, causing **TLE**.
-
-Space Complexity:
-* **O(1)**: Excluding the space for the result vector, we use constant extra space per query.
+* Time Complexity: O(N + Q log N)
+  - Precomputation: O(N)
+  - Query: Q queries * O(log N) for binary search.
+* Space Complexity: O(N) to store the prefix arrays.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎓 Key Notes
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-* **Why TLE?**: The bottleneck is re-scanning the string for every single query.
-* **Optimization Path**: To pass, this should be optimized using **Prefix Sums** and **Prefix XOR-like logic** for the concatenated value to achieve $O(1)$ per query.
-* **Accuracy**: This logic is mathematically correct for small constraints but fails the time limit on LeetCode's Hard-tier test cases.
-
+* The "Rolling Hash" logic `v2 = (pv[b] - pv[a-1] * 10^(len))` is the standard 
+  way to get the value of a substring in O(1).
+* Binary search is necessary because the input string `s` has zeros, making 
+  the non-zero digit indices non-contiguous.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 */
