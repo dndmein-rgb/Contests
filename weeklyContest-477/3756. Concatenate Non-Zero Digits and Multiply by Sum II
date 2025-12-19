@@ -1,0 +1,111 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Weekly Contest 477
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: Q3756. Concatenate Non-Zero Digits and Multiply by Sum II
+📌 Platform: LeetCode
+🏷️ Difficulty: Hard
+🏆 Topics: Math, String, Simulation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given a string `s` representing a large integer and multiple queries `queries[i] = [l, r]`:
+1. For each query, consider the substring `s[l...r]`.
+2. Form an integer `x` by concatenating all **non-zero** digits in that range.
+3. Calculate `sum`, the sum of those non-zero digits.
+4. Return `(x * sum) % (10^9 + 7)`.
+
+Note: This version uses a direct simulation approach which is easy to understand but results in **TLE (Time Limit Exceeded)** for large inputs.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Brute Force / Simulation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The logic follows the problem statement step-by-step for every query:
+
+1. **Iterate through Queries**: For every query `[l, r]`, process the substring.
+2. **Right-to-Left Traversal**: To build the number `x` without string concatenation:
+   * Start from the end of the range (`r`) and move towards `l`.
+   * Maintain a `final` multiplier (power of 10) that only increases when a non-zero digit is encountered.
+3. **Modular Arithmetic**: Apply `% 1e9 + 7` at each addition and multiplication step to prevent integer overflow.
+4. **Edge Case**: If no non-zero digits are found, the result is `0`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: `s = "1024"`, query `[0, 3]`
+
+1.  **Digit 4**: `sum = 4`, `x = 4`, `multiplier = 10`.
+2.  **Digit 2**: `sum = 6`, `x = (2 * 10) + 4 = 24`, `multiplier = 100`.
+3.  **Digit 0**: Skip.
+4.  **Digit 1**: `sum = 7`, `x = (1 * 100) + 24 = 124`.
+
+Final result: `(124 * 7) % MOD = 868`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+    typedef long long ll;
+    int mod = 1e9 + 7;
+
+public:
+    long long solved(string &s, int l, int r) {
+        ll ans = 0;
+        ll sum = 0;
+        ll final = 1;
+        
+        // Traverse the range backwards to build the number correctly
+        for (int i = r; i >= l; i--) {
+            int digit = s[i] - '0';
+            if (digit != 0) {
+                sum += digit;
+                // Build x: (digit * 10^k) + previous_ans
+                ans = (digit * final + ans) % mod;
+                // Only increase power of 10 for non-zero digits
+                final = (final * 10) % mod;
+            }
+        }
+        return (ans % mod) * (sum % mod) % mod;
+    }
+
+    vector<int> sumAndMultiply(string s, vector<vector<int>>& queries) {
+        vector<int> ans;
+        for (auto &q : queries) {
+            int x = q[0];
+            int y = q[1];
+            ans.push_back(solved(s, x, y));
+        }
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let `N` be the length of string `s` and `Q` be the number of queries.
+
+Time Complexity:
+* **O(Q × N)**: In the worst case, every query spans the entire string. With $Q, N \approx 10^5$, this leads to $10^{10}$ operations, causing **TLE**.
+
+Space Complexity:
+* **O(1)**: Excluding the space for the result vector, we use constant extra space per query.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Why TLE?**: The bottleneck is re-scanning the string for every single query.
+* **Optimization Path**: To pass, this should be optimized using **Prefix Sums** and **Prefix XOR-like logic** for the concatenated value to achieve $O(1)$ per query.
+* **Accuracy**: This logic is mathematically correct for small constraints but fails the time limit on LeetCode's Hard-tier test cases.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
