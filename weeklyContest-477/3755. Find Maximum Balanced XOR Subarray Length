@@ -1,0 +1,120 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Weekly Contest 477
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: Q3755. Find Maximum Balanced XOR Subarray Length
+📌 Platform: LeetCode
+🏷️ Difficulty: Medium
+🏆 Topics: Hash Table, Prefix Sum, Bit Manipulation, Subarray
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given an integer array `nums`, find the length of the **longest subarray** that satisfies two conditions simultaneously:
+1. The bitwise **XOR sum** of all elements in the subarray is **0**.
+2. The subarray contains an **equal number** of even and odd numbers (balanced).
+
+If no such subarray exists, return 0.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This problem requires tracking two different properties over a range $[i, j]$. A subarray $nums[i \dots j]$ satisfies the conditions if:
+1. $PrefixXOR[j] \oplus PrefixXOR[i-1] = 0 \implies PrefixXOR[j] = PrefixXOR[i-1]$
+2. $(Even_j - Odd_j) - (Even_{i-1} - Odd_{i-1}) = 0 \implies (Even_j - Odd_j) = (Even_{i-1} - Odd_{i-1})$
+
+By combining these two state variables into a single key `{current_xor, even_odd_diff}`, we can use a Hash Map to find the earliest occurrence of this state.
+
+Steps:
+1. Use a map to store the first time a specific `{xor_sum, diff}` pair is seen.
+2. Initialize the map with `{0, 0}` at index `-1` to handle subarrays starting from index 0.
+3. Traverse the array:
+   * Update the running `xor_sum`.
+   * Increment `even` count if `nums[i]` is even, else increment `odd`.
+   * Calculate `diff = even - odd`.
+   * Check if the pair `{xor_sum, diff}` exists in the map.
+   * If it exists: update the maximum length `i - mp[{xor_sum, diff}]`.
+   * If it doesn't: store the current index `i`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: `nums = [2, 4, 1, 3]`
+
+1.  **Start**: `mp[{0,0}] = -1`
+2.  **i = 0 (val: 2)**: 2 is even. `diff = 1`, `xor = 2`. Map: `{{2,1}: 0}`
+3.  **i = 1 (val: 4)**: 4 is even. `diff = 2`, `xor = 2^4 = 6`. Map: `{{2,1}: 0, {6,2}: 1}`
+4.  **i = 2 (val: 1)**: 1 is odd. `diff = 1`, `xor = 6^1 = 7`. Map: `{{2,1}: 0, {6,2}: 1, {7,1}: 2}`
+5.  **i = 3 (val: 3)**: 3 is odd. `diff = 0`, `xor = 7^3 = 4`. Map: `{{2,1}: 0, {6,2}: 1, {7,1}: 2, {4,0}: 3}`
+
+If we had a subarray where the state returned to `{0,0}`, we would subtract the stored index `-1` from the current `i`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int maxBalancedSubarray(vector<int>& nums) {
+        // Map stores {pair<prefixXOR, evenMinusOddDiff>, first_occurrence_index}
+        map<pair<int, int>, int> mp;
+        int n = nums.size();
+        int even = 0;
+        int odd = 0;
+        int x = 0;
+        
+        // Base case: XOR 0 and Diff 0 at index -1
+        mp[{0, 0}] = -1;
+        int maxi = 0;
+
+        for (int i = 0; i < n; i++) {
+            // Update counts for even/odd balance
+            if (nums[i] % 2 == 0) even++;
+            else odd++;
+            
+            int diff = even - odd;
+            
+            // Update running XOR sum
+            x = x ^ nums[i];
+
+            // If this state has been seen before, we found a balanced XOR-zero subarray
+            if (mp.find({x, diff}) != mp.end()) {
+                maxi = max(maxi, i - mp[{x, diff}]);
+            } else {
+                // Only store the first occurrence to maximize the subarray length
+                mp[{x, diff}] = i;
+            }
+        }
+        
+        return maxi;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let `n` be the size of the input array.
+
+Time Complexity:
+* **O(n log n)**: We traverse the array once. Each map operation (find/insert) takes logarithmic time due to the `std::map` (ordered map) structure. Using `std::unordered_map` with a custom hash would result in **O(n)** average time.
+
+Space Complexity:
+* **O(n)**: In the worst case, we store a unique state for every index in the map.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **The "Zero" State**: Initializing `mp[{0,0}] = -1` is the standard way to handle subarrays that satisfy the condition starting from the very first element.
+* **State Compression**: The problem effectively asks us to find $i$ and $j$ such that the prefix sums of two different properties are equal at both boundaries.
+* **Optimization**: If performance is an issue, `std::unordered_map` with a hash function for `std::pair` would be faster than `std::map`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
