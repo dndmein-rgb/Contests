@@ -1,0 +1,287 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 481
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3784. Minimum Deletion Cost to Make All Characters Equal
+📌 Link: https://leetcode.com/problems/minimum-deletion-cost-to-make-all-characters-equal/
+🏷️ Difficulty: Medium
+🏆 Topics: String, Greedy, Array
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- A string s of lowercase English letters
+- An array cost where cost[i] is the cost to delete character s[i]
+
+Goal: 
+- Delete characters to make all remaining characters the same
+- Minimize the total deletion cost
+
+Key Insight:
+- We need to choose ONE character to keep (all others deleted)
+- To minimize cost: keep the character with maximum total cost
+
+Example:
+  s = "abaac"
+  cost = [1, 2, 3, 4, 5]
+  
+  Character frequencies and total costs:
+    'a': appears at indices 0,2,3 → costs = 1+3+4 = 8
+    'b': appears at index 1 → cost = 2
+    'c': appears at index 4 → cost = 5
+  
+  Best strategy: Keep all 'a's (cost = 8)
+  Delete 'b' and 'c' → deletion cost = 2 + 5 = 7
+  
+  Answer: 7
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strategy: Greedy - Keep Character with Maximum Total Cost
+
+Key Insight:
+- Final string will have all characters the same
+- We must choose exactly ONE character type to keep
+- To minimize deletion cost: keep character with HIGHEST total cost
+- Delete everything else
+
+Algorithm:
+1️⃣ Calculate sum of costs for each character (a-z)
+2️⃣ Calculate total cost of all characters
+3️⃣ Find character with maximum sum of costs
+4️⃣ Answer = total - maximum_sum
+   (Delete all except the most valuable character)
+
+Mathematical Proof:
+  Total Cost = Cost(keep) + Cost(delete)
+  Cost(delete) = Total Cost - Cost(keep)
+  
+  To minimize Cost(delete):
+    Maximize Cost(keep)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: s = "abaac", cost = [1, 2, 3, 4, 5]
+
+Step 1: Calculate sum of costs for each character
+  Index:  0  1  2  3  4
+  Char:   a  b  a  a  c
+  Cost:   1  2  3  4  5
+  
+  sum['a'] = cost[0] + cost[2] + cost[3] = 1 + 3 + 4 = 8
+  sum['b'] = cost[1] = 2
+  sum['c'] = cost[4] = 5
+  sum[others] = 0
+
+Step 2: Calculate total cost
+  total = 1 + 2 + 3 + 4 + 5 = 15
+
+Step 3: Find maximum sum
+  max(sum) = max(8, 2, 5, 0, ..., 0) = 8 (character 'a')
+
+Step 4: Calculate minimum deletion cost
+  minCost = total - keep
+  minCost = 15 - 8 = 7
+
+Verification:
+  Keep: "aaa" (cost to keep = 8)
+  Delete: "b" and "c" (cost = 2 + 5 = 7) ✅
+
+Output: 7
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity:  O(n)
+   └─ Single pass to calculate sums: O(n)
+   └─ Find maximum in 26 elements: O(26) = O(1)
+   └─ Total: O(n)
+   
+💾 Space Complexity: O(1)
+   └─ sum array of size 26 = constant space
+   └─ Total: O(1)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    typedef long long ll;
+    
+    long long minCost(string s, vector<int>& cost) {
+        // 📊 sum[i] = total cost of character (i + 'a')
+        vector<ll> sum(26, 0);
+        int n = s.length();
+        ll total = 0;  // Total cost of all characters
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 1: Calculate sum of costs for each character
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        for (int i = 0; i < n; i++) {
+            // Convert character to index (0-25)
+            int c = s[i] - 'a';
+            
+            // Add this character's cost to its total
+            sum[c] += cost[i];
+            
+            // Track overall total
+            total += cost[i];
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 2: Find character with maximum total cost
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        ll keep = 0;
+        for (int i = 0; i < 26; i++) {
+            keep = max(keep, sum[i]);
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 3: Calculate minimum deletion cost
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // We keep the character with max total cost
+        // Delete everything else
+        return total - keep;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Core Greedy Strategy:
+   - We must choose ONE character to keep
+   - To minimize deletion cost: maximize kept cost
+   - Equivalent to: minimize deletion = maximize retention
+
+🔑 Why This Works:
+   total = kept + deleted
+   deleted = total - kept
+   
+   To minimize deleted:
+     maximize kept ✅
+
+⚠️ Common Mistakes:
+   - Thinking we need complex DP
+   - Trying to minimize each character individually
+   - Not realizing ALL remaining chars must be the same
+
+🎯 Optimization:
+   - Single pass through string
+   - Constant space (only 26 characters)
+   - No sorting needed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Visual Example
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: s = "aaabbc", cost = [3, 4, 5, 2, 6, 1]
+
+Character Analysis:
+┌──────┬────────────┬──────────────┬──────────┐
+│ Char │ Indices    │ Costs        │ Sum      │
+├──────┼────────────┼──────────────┼──────────┤
+│ 'a'  │ 0, 1, 2    │ 3, 4, 5      │ 12 ← MAX │
+│ 'b'  │ 3, 4       │ 2, 6         │ 8        │
+│ 'c'  │ 5          │ 1            │ 1        │
+└──────┴────────────┴──────────────┴──────────┘
+
+Total cost = 3 + 4 + 5 + 2 + 6 + 1 = 21
+
+Decision: Keep 'a' (sum = 12)
+Delete: 'b' and 'c' (cost = 8 + 1 = 9)
+
+Answer: 21 - 12 = 9
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Edge Cases
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Case 1: All characters same
+  s = "aaaa"
+  cost = [1, 2, 3, 4]
+  
+  Keep all 'a's: sum = 10
+  Delete nothing: cost = 0 ✅
+
+Case 2: All characters different
+  s = "abcd"
+  cost = [1, 2, 3, 4]
+  
+  sum = [1, 2, 3, 4, ...]
+  Keep 'd' (max = 4)
+  Delete others: 1 + 2 + 3 = 6 ✅
+
+Case 3: Single character
+  s = "a"
+  cost = [5]
+  
+  Keep 'a': sum = 5
+  Delete nothing: cost = 0 ✅
+
+Case 4: High cost outlier
+  s = "aab"
+  cost = [1, 1, 100]
+  
+  sum['a'] = 2, sum['b'] = 100
+  Keep 'b' (max = 100)
+  Delete 'a's: cost = 2 ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 Why Not DP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You might think: "This looks like a DP problem!"
+
+But DP is NOT needed because:
+
+1. No overlapping subproblems
+   - Each character's decision is independent
+   - We just need to pick ONE character
+
+2. No state transitions
+   - Not building up a solution step by step
+   - Just: sum all costs, pick max, subtract
+
+3. Greedy is optimal
+   - Mathematical proof: minimize deletion = maximize retention
+   - No need to explore different paths
+
+Comparison:
+  Greedy: O(n) time, O(1) space ✅
+  DP: O(n × 26) time, O(n × 26) space ❌
+
+Greedy wins! 🎯
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Related Problems
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Similar patterns:
+- Minimum Deletion Cost to Avoid Repeating Characters (LeetCode 1578)
+- Minimum Cost to Make Array Equal (LeetCode 2448)
+- Minimum Cost to Merge Stones
+- Delete Characters to Make Fancy String
+- Make String a Subsequence Using Cyclic Increments
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Learning Points
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ Greedy often beats DP when problem has simple optimal structure
+2. ✅ "Minimize deletion" = "Maximize retention" (complementary thinking)
+3. ✅ Character frequency with costs → array of 26
+4. ✅ Single pass is enough for many problems
+5. ✅ Always check if greedy works before implementing DP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
