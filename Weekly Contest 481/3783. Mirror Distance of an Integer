@@ -1,0 +1,292 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 481
+📅 Date: December 22, 2024
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3783. Mirror Distance of an Integer
+📌 Link: https://leetcode.com/problems/mirror-distance-of-an-integer/
+🏷️ Difficulty: Easy
+🏆 Topics: Math, String Manipulation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given a positive integer n:
+- Find its mirror (reverse of digits)
+- Return the absolute difference between n and its mirror
+
+Mirror = Reverse of the digits
+Distance = |n - mirror|
+
+Examples:
+- n = 123 → mirror = 321 → distance = |123 - 321| = 198
+- n = 505 → mirror = 505 → distance = |505 - 505| = 0
+- n = 100 → mirror = 001 = 1 → distance = |100 - 1| = 99
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strategy: Digit-by-Digit Reversal
+
+Algorithm:
+1️⃣ Extract digits from n one by one (from right to left)
+2️⃣ Build reversed number by:
+   - Multiply current reversed number by 10
+   - Add the extracted digit
+3️⃣ Return absolute difference between n and reversed number
+
+Visual Process for n = 123:
+  Initial: x = 123, rev = 0
+  
+  Step 1: digit = 3
+    rev = 0 * 10 + 3 = 3
+    x = 12
+  
+  Step 2: digit = 2
+    rev = 3 * 10 + 2 = 32
+    x = 1
+  
+  Step 3: digit = 1
+    rev = 32 * 10 + 1 = 321
+    x = 0
+  
+  Result: |123 - 321| = 198
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example 1: n = 123
+
+Step-by-step reversal:
+  x = 123, rev = 0
+  
+  Iteration 1:
+    digit = 123 % 10 = 3
+    rev = 0 * 10 + 3 = 3
+    x = 123 / 10 = 12
+  
+  Iteration 2:
+    digit = 12 % 10 = 2
+    rev = 3 * 10 + 2 = 32
+    x = 12 / 10 = 1
+  
+  Iteration 3:
+    digit = 1 % 10 = 1
+    rev = 32 * 10 + 1 = 321
+    x = 1 / 10 = 0
+  
+  Exit loop (x = 0)
+  
+  Distance = |321 - 123| = 198
+
+Example 2: n = 505 (Palindrome)
+
+Step-by-step:
+  x = 505, rev = 0
+  
+  Iteration 1: digit = 5, rev = 5, x = 50
+  Iteration 2: digit = 0, rev = 50, x = 5
+  Iteration 3: digit = 5, rev = 505, x = 0
+  
+  Distance = |505 - 505| = 0
+
+Example 3: n = 100 (Trailing zeros)
+
+Step-by-step:
+  x = 100, rev = 0
+  
+  Iteration 1: digit = 0, rev = 0, x = 10
+  Iteration 2: digit = 0, rev = 0, x = 1
+  Iteration 3: digit = 1, rev = 1, x = 0
+  
+  Distance = |100 - 1| = 99
+  (Leading zeros in reversed number are dropped!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity:  O(log n)
+   └─ Number of digits in n = log₁₀(n)
+   └─ We process each digit once
+   
+💾 Space Complexity: O(1)
+   └─ Only using constant extra space (x, rev, digit variables)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int mirrorDistance(int n) {
+        int x = n;      // Working copy of n
+        int rev = 0;    // Reversed number
+        
+        // 🔄 Reverse the digits of n
+        while (x > 0) {
+            // 📊 Extract rightmost digit
+            int digit = x % 10;
+            
+            // 🔢 Build reversed number:
+            // Shift existing digits left (×10) and add new digit
+            rev = rev * 10 + digit;
+            
+            // ➡️ Remove rightmost digit from x
+            x /= 10;
+        }
+        
+        // 🎯 Return absolute difference
+        return abs(rev - n);
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Core Technique: Digit Extraction and Reconstruction
+   - Use modulo (%) to extract rightmost digit
+   - Use integer division (/) to remove rightmost digit
+   - Build new number by multiplying by 10 and adding digit
+
+🔑 Why This Works:
+   - Numbers are processed right-to-left in extraction
+   - Reversed number is built left-to-right
+   - Perfect for creating mirror image!
+
+⚠️ Edge Cases:
+   - Palindromes (e.g., 121) → distance = 0
+   - Numbers with trailing zeros (e.g., 100) → leading zeros dropped
+   - Single digit (e.g., 5) → distance = 0
+   - All same digits (e.g., 333) → distance = 0
+
+🎯 Mathematical Pattern:
+   For number with digits d₁d₂d₃...dₙ
+   - Original: d₁×10^(n-1) + d₂×10^(n-2) + ... + dₙ×10^0
+   - Reversed: dₙ×10^(n-1) + dₙ₋₁×10^(n-2) + ... + d₁×10^0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Detailed Trace: Building Reversed Number
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For n = 1234:
+
+Initial State:
+  x = 1234
+  rev = 0
+
+┌──────┬────────┬─────────────────┬──────────┬──────┐
+│ Step │ Digit  │ Calculation     │ rev      │ x    │
+├──────┼────────┼─────────────────┼──────────┼──────┤
+│ 0    │ -      │ Initial         │ 0        │ 1234 │
+│ 1    │ 4      │ 0*10 + 4        │ 4        │ 123  │
+│ 2    │ 3      │ 4*10 + 3        │ 43       │ 12   │
+│ 3    │ 2      │ 43*10 + 2       │ 432      │ 1    │
+│ 4    │ 1      │ 432*10 + 1      │ 4321     │ 0    │
+└──────┴────────┴─────────────────┴──────────┴──────┘
+
+Result: |1234 - 4321| = 3087
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 Alternative Approaches
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Approach 1: String Manipulation (Current approach is better)
+  string s = to_string(n);
+  reverse(s.begin(), s.end());
+  int rev = stoi(s);
+  return abs(n - rev);
+
+✅ Current (Math): O(log n) time, O(1) space
+❌ String: O(log n) time, O(log n) space
+
+Approach 2: Recursive
+  int reverse(int x, int rev = 0) {
+      if (x == 0) return rev;
+      return reverse(x / 10, rev * 10 + x % 10);
+  }
+
+✅ Current: Iterative, no stack overhead
+❌ Recursive: Extra stack space O(log n)
+
+Current approach is optimal! 🎯
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Special Cases
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Case 1: Palindrome Numbers
+  n = 12321
+  reversed = 12321
+  distance = 0 ✅
+
+Case 2: Trailing Zeros
+  n = 1000
+  reversed = 0001 = 1  (leading zeros dropped!)
+  distance = 999 ✅
+
+Case 3: Single Digit
+  n = 7
+  reversed = 7
+  distance = 0 ✅
+
+Case 4: Two Digits
+  n = 42
+  reversed = 24
+  distance = 18 ✅
+
+Case 5: All Same Digits
+  n = 7777
+  reversed = 7777
+  distance = 0 ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Pattern: Digit Manipulation Template
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a fundamental pattern for digit manipulation:
+
+// Extract digits from right to left
+while (x > 0) {
+    int digit = x % 10;    // Get rightmost digit
+    // Process digit here
+    x /= 10;               // Remove rightmost digit
+}
+
+Common uses:
+- Reverse number (this problem)
+- Sum of digits
+- Count digits
+- Check palindrome
+- Digital root
+- Convert number to different base
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 Related Problems
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Similar patterns:
+- Reverse Integer (LeetCode 7)
+- Palindrome Number (LeetCode 9)
+- Add Digits (LeetCode 258)
+- Happy Number (LeetCode 202)
+- Sum of Digits in Base K
+- Perfect Number
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Learning Points
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ Modulo (%) extracts rightmost digit
+2. ✅ Integer division (/) removes rightmost digit
+3. ✅ Multiply by 10 shifts digits left
+4. ✅ Leading zeros are automatically dropped in integers
+5. ✅ abs() handles both positive and negative differences
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
