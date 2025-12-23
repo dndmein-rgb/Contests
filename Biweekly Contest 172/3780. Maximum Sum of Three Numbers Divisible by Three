@@ -1,0 +1,122 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Biweekly Contest 172
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: Q3780. Maximum Sum of Three Numbers Divisible by Three
+📌 Platform: LeetCode
+🏷️ Difficulty: Medium
+🏆 Topics: Math, Greedy, Sorting
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given an array of integers `nums`, find the **maximum sum** of exactly **three** numbers such that their sum is divisible by 3. If no such triplet exists, 
+the logic naturally returns 0 (though the problem usually guarantees one or 
+expects a specific return for null cases).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a classic remainder-based greedy problem. For a sum of three numbers 
+$(a + b + c)$ to be divisible by 3, the sum of their remainders modulo 3 
+must also be divisible by 3.
+
+Possible remainder combinations $(r_1, r_2, r_3)$ that sum to $0 \pmod 3$:
+1.  **{0, 0, 0}**: Three numbers all divisible by 3.
+2.  **{1, 1, 1}**: Three numbers that each give remainder 1.
+3.  **{2, 2, 2}**: Three numbers that each give remainder 2.
+4.  **{0, 1, 2}**: One number from each remainder category.
+
+
+
+Steps:
+1.  Categorize all numbers into three buckets based on `x % 3`.
+2.  Sort each bucket in descending order to pick the largest values greedily.
+3.  Calculate the max sum for the four valid combinations above.
+4.  Return the maximum found.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: `nums = [1, 5, 2, 9, 3, 6]`
+
+1.  **Buckets**:
+    * `r[0] = [9, 6, 3]` (Sorted)
+    * `r[1] = [1]`
+    * `r[2] = [5, 2]`
+2.  **Checking Combinations**:
+    * **{0,0,0}**: $9+6+3 = 18$
+    * **{1,1,1}**: Not enough elements.
+    * **{2,2,2}**: Not enough elements.
+    * **{0,1,2}**: $9+1+5 = 15$
+3.  **Max**: $18$.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int maximumSum(vector<int>& nums) {
+        // Group numbers by their remainder when divided by 3
+        vector<int> r[3];
+        for (int x : nums) {
+            r[x % 3].push_back(x);
+        }
+
+        // Sort each bucket in descending order to pick the largest numbers
+        for (int i = 0; i < 3; i++) {
+            sort(r[i].rbegin(), r[i].rend());
+        }
+
+        int ans = 0;
+
+        // Case 1: Three numbers with remainder 0 (0+0+0 = 0 mod 3)
+        if (r[0].size() >= 3) {
+            ans = max(ans, r[0][0] + r[0][1] + r[0][2]);
+        }
+
+        // Case 2: Three numbers with remainder 1 (1+1+1 = 3 = 0 mod 3)
+        if (r[1].size() >= 3) {
+            ans = max(ans, r[1][0] + r[1][1] + r[1][2]);
+        }
+
+        // Case 3: Three numbers with remainder 2 (2+2+2 = 6 = 0 mod 3)
+        if (r[2].size() >= 3) {
+            ans = max(ans, r[2][0] + r[2][1] + r[2][2]);
+        }
+
+        // Case 4: One number from each remainder bucket (0+1+2 = 3 = 0 mod 3)
+        if (!r[0].empty() && !r[1].empty() && !r[2].empty()) {
+            ans = max(ans, r[0][0] + r[1][0] + r[2][0]);
+        }
+
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Time Complexity**: $O(n \log n)$ due to sorting the buckets. The bucket 
+  distribution is $O(n)$, and checking the 4 cases is $O(1)$.
+* **Space Complexity**: $O(n)$ to store the numbers in remainder buckets.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Greedy Property**: Because we only pick three numbers, and the remainder 
+  rules are fixed, picking the largest available numbers from the 
+  necessary buckets always yields the maximum possible sum.
+* **Scalability**: This same logic can be extended using Dynamic Programming 
+  if the problem asked for the maximum sum of $K$ numbers divisible by $M$.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
