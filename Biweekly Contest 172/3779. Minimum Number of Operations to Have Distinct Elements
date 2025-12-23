@@ -1,0 +1,142 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Biweekly Contest 172
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: Q3779. Minimum Number of Operations to Have Distinct Elements
+📌 Platform: LeetCode
+🏷️ Difficulty: medium
+🏆 Topics: Array, Hash Table, Greedy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You are given an array `nums`. In one operation, you can remove the **first 3 elements** from the array. If the array has fewer than 3 elements, you remove all of them.
+
+Goal: Find the **minimum number of operations** required until all remaining 
+elements in the array are **distinct**.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The problem asks for the minimum operations, which suggests a greedy simulation. 
+Since we always remove from the front, we can track how many "duplicates" currently 
+exist in our frequency map.
+
+1.  **Count Duplicates**: Use a hash map to store frequencies. Count how many 
+    numbers have `frequency >= 2`.
+2.  **Early Exit**: If the duplicate count is 0 initially, return 0.
+3.  **Simulate Removal**:
+    * Iterate through the array in steps of 3 (representing one operation).
+    * For each element in the 3-element window, decrement its frequency in the map.
+    * If a frequency drops from 2 to 1, we have "cleared" one duplicate.
+    * Stop as soon as the duplicate count reaches 0.
+4.  **Return Operations**: The number of steps taken.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: `nums = [1, 2, 3, 4, 2, 3, 3]`
+
+1.  **Initial Frequencies**: `1:1, 2:2, 3:3, 4:1`.
+    * Duplicates: `2` and `3` (Count = 2).
+2.  **Op 1 (Remove [1, 2, 3])**:
+    * `1` freq: $1 \to 0$.
+    * `2` freq: $2 \to 1$ (Duplicate count becomes 1).
+    * `3` freq: $3 \to 2$.
+    * Duplicates remaining: 1.
+3.  **Op 2 (Remove [4, 2, 3])**:
+    * `4` freq: $1 \to 0$.
+    * `2` freq: $1 \to 0$.
+    * `3` freq: $2 \to 1$ (Duplicate count becomes 0).
+    * **Distinct!**
+
+Result: **2 operations**.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int minOperations(vector<int>& nums) {
+        int n = nums.size();
+        unordered_set<int> seen;
+        
+        // Iterate from right to left to find the longest distinct suffix
+        for (int i = n - 1; i >= 0; i--) {
+            if (seen.count(nums[i])) {
+                // 'i' is the index of the rightmost duplicate.
+                // We must remove all elements from index 0 to i.
+                // Number of elements to remove = i + 1.
+                return (i / 3) + 1;
+            }
+            seen.insert(nums[i]);
+        }
+        
+        // If we finish the loop, the entire array was already distinct
+        return 0;
+    }
+};
+
+
+
+class Solution {
+public:
+    int minOperations(vector<int>& nums) {
+        int n = nums.size(), dupCount = 0;
+        unordered_map<int, int> freq;
+
+        // Step 1: Initialize frequency and initial duplicate count
+        for (int x : nums) freq[x]++;
+        for (auto& [val, f] : freq) {
+            if (f >= 2) dupCount++;
+        }
+
+        // Base case: already distinct
+        if (dupCount == 0) return 0;
+
+        int ops = 0;
+        // Step 2: Simulate operations (removing 3 elements at a time)
+        for (int i = 0; i < n; i += 3) {
+            ops++;
+            // Process the current window of 3
+            for (int j = i; j < min(i + 3, n); j++) {
+                freq[nums[j]]--;
+                // If frequency hits 1, it's no longer a duplicate
+                if (freq[nums[j]] == 1) {
+                    dupCount--;
+                }
+            }
+            // If all elements are distinct, we can stop
+            if (dupCount <= 0) break;
+        }
+        
+        return ops;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Time Complexity**: $O(n)$. We traverse the array once to build the map 
+    and once more to simulate the removals.
+* **Space Complexity**: $O(n)$ to store the frequency map in the worst 
+    case (all elements are distinct).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* The problem can also be solved by finding the **last index** of any duplicate 
+    and calculating how many "blocks of 3" are needed to cover that index.
+* The greedy choice is optimal because we have no choice but to remove 
+    elements from the front.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
