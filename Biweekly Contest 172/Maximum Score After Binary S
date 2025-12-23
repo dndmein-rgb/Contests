@@ -1,0 +1,98 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Biweekly Contest 172
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: Q3781. Maximum Score After Binary Swaps
+📌 Platform: LeetCode
+🏷️ Difficulty: Medium
+🏆 Topics: Greedy, Priority Queue, Heap, String
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You are given an array `nums` and a binary string `s` of the same length. 
+- You can swap any two characters in `s` any number of times.
+- After performing swaps, if `s[i] == '1'`, you collect the value `nums[i]`.
+
+Goal: Find the maximum total score you can achieve.
+
+**Crucial Insight**: Swapping characters in `s` allows you to effectively "reassign" the available '1's to any indices in `nums`. However, the order of operations matters—you want to ensure that for every '1' available up to index `i`, you pick the largest possible value available from the set of numbers encountered so far.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Since we can swap '1's anywhere, this is a **Greedy** problem that can be solved using a **Max-Heap (Priority Queue)**.
+
+1.  **Iterate through the array**: As we move from index `0` to `n-1`, we "discover" new values in `nums`.
+2.  **Maintain a Pool**: Add each `nums[i]` into a Max-Heap. This heap represents all the values we can potentially collect using the '1's we have encountered.
+3.  **Collect Greedily**: Every time we encounter a `'1'` in the string `s`, it represents an "allowance" to pick one value. To maximize the score, we always pick the **largest available value** currently in our Max-Heap.
+4.  **Sum the Top**: Add `pq.top()` to the total score and remove it from the heap.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: `nums = [2, 8, 4, 1]`, `s = "0101"`
+
+1.  **i = 0 (nums[0]=2, s[0]='0')**: 
+    * Heap: `{2}`. No '1's yet.
+2.  **i = 1 (nums[1]=8, s[1]='1')**: 
+    * Heap: `{8, 2}`. 
+    * Found '1'! Pick largest: `ans += 8`. Heap: `{2}`.
+3.  **i = 2 (nums[2]=4, s[2]='0')**: 
+    * Heap: `{4, 2}`.
+4.  **i = 3 (nums[3]=1, s[3]='1')**: 
+    * Heap: `{4, 2, 1}`. 
+    * Found '1'! Pick largest: `ans += 4`. Heap: `{2, 1}`.
+
+**Final Score**: $8 + 4 = 12$.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    long long maximumScore(vector<int>& nums, string s) {
+        priority_queue<long long> pq;
+        long long ans = 0;
+
+        for (int i = 0; i < nums.size(); i++) {
+            // Add current number to the available pool
+            pq.push(nums[i]);
+
+            // If we have a '1', we use it to pick the best number seen so far
+            if (s[i] == '1') {
+                if (!pq.empty()) {
+                    ans += pq.top();
+                    pq.pop();
+                }
+            }
+        }
+        
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Time Complexity**: $O(n \log n)$. We iterate through the array once ($n$ steps). Each step involves a priority queue push and potentially a pop, both taking $O(\log n)$ time.
+* **Space Complexity**: $O(n)$ to store elements in the priority queue in the worst-case scenario (many '0's followed by few '1's).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Why this works**: Even though you can swap '1's anywhere, you are limited by the *number* of '1's available up to any point $i$. By index $i$, you can have used at most the number of '1's present in $s[0 \dots i]$. The heap ensures you use those '1's on the best possible values.
+* **Large Numbers**: We use `long long` for the answer and the heap elements to prevent integer overflow during summation.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
