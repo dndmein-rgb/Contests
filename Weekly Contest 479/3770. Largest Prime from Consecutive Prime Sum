@@ -71,43 +71,46 @@ public:
 Complexity: O(N log log N) once for precomputation, O(√N) per query.
 */
 
-using namespace std;
 
-// Global Sieve to share data across all test cases
-const int MAX_LIMIT = 500001;
-vector<bool> is_prime_global(MAX_LIMIT, true);
-vector<int> prime_list;
+vector<bool> isPrime;
 
-// Executed exactly once when the program starts
-bool initialized = []() {
-    is_prime_global[0] = is_prime_global[1] = false;
-    for (int i = 2; i * i < MAX_LIMIT; ++i) {
-        if (is_prime_global[i]) {
-            for (int j = i * i; j < MAX_LIMIT; j += i)
-                is_prime_global[j] = false;
+vector<int> setPrimes() {
+    int nMax = 500001;
+    isPrime.assign(nMax, true);
+
+    isPrime[0] = isPrime[1] = false;
+
+    for (int i = 2; i * i < nMax; ++i) {
+        if (!isPrime[i]) continue;
+        for (int j = i + i; j < nMax; j += i) {
+            isPrime[j] = false;
         }
     }
-    for (int i = 2; i < MAX_LIMIT; ++i) {
-        if (is_prime_global[i]) prime_list.push_back(i);
+
+    vector<int> primes;
+    for (int i = 2; i < nMax; ++i) {
+        if (isPrime[i]) {
+            primes.push_back(i);
+        }
     }
-    return true;
-}();
+    return primes;
+}
+
+vector<int> primes = setPrimes();
 
 class Solution {
 public:
     int largestPrime(int n) {
         if (n < 2) return 0;
 
-        long long current_sum = 0;
+        int sum = 0;
         int res = 0;
 
-        for (int p : prime_list) {
-            current_sum += p;
-            if (current_sum > n) break;
-            
-            // Instant primality check
-            if (current_sum < MAX_LIMIT && is_prime_global[current_sum]) {
-                res = (int)current_sum;
+        for (int p : primes) {
+            sum += p;
+            if (sum > n) break;
+            if (isPrime[sum]) {
+                res = sum;
             }
         }
         return res;
