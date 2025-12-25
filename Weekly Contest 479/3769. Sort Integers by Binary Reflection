@@ -1,0 +1,109 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Weekly Contest 479
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3769. Sort Integers by Binary Reflection
+📌 Platform: LeetCode
+🏷️ Difficulty: Medium
+🏆 Topics: Bit Manipulation, Sorting, Custom Comparator
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You are given an array of integers. You need to sort them based on their 
+**Binary Reflection**. 
+The binary reflection of a number is formed by reversing its binary digits. 
+If two numbers have the same reflection, the smaller original number should 
+come first.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.  **Reflect Function**: To "reflect" a number, we treat its binary representation 
+    like a string and reverse it. 
+    * We extract the last bit using `n & 1`.
+    * We build the reflected number by shifting the existing `ans` left (`ans * 2`) 
+      and adding the extracted bit.
+    * We shift the original number right (`n /= 2`).
+2.  **Custom Sorting**: Use `std::sort` with a lambda comparator.
+    * For every pair `(a, b)`, compute `reflect(a)` and `reflect(b)`.
+    * Compare the reflected values.
+    * If reflected values are equal, compare the original values (tie-breaking).
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: `nums = [1, 3, 4]`
+
+1.  **Reflect 1**: Binary `1`. Reverse is `1`. Reflected: `1`.
+2.  **Reflect 3**: Binary `11`. Reverse is `11`. Reflected: `3`.
+3.  **Reflect 4**: Binary `100`. Reverse is `001`. Reflected: `1`.
+
+**Comparison**:
+* `reflect(1) = 1`, `reflect(4) = 1`. Since $1 = 1$, check original: $1 < 4$. So `1` comes before `4`.
+* `reflect(3) = 3`. Since $1 < 3$, `1` and `4` both come before `3`.
+
+**Final Result**: `[1, 4, 3]`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    // Helper function to reverse bits of an integer
+    int reflect(int n) {
+        int ans = 0;
+        while (n > 0) {
+            int digit = n & 1;   // Get the LSB (Least Significant Bit)
+            ans = ans * 2 + digit; // Shift ans and add the bit
+            n /= 2;              // Remove the LSB from n
+        }
+        return ans;
+    }
+
+    vector<int> sortByReflection(vector<int>& nums) {
+        sort(nums.begin(), nums.end(), [&](int a, int b) {
+            int ra = reflect(a);
+            int rb = reflect(b);
+            
+            // Primary sort: Reflected value
+            if (ra != rb) return ra < rb;
+            
+            // Secondary sort: Original value (Tie-breaker)
+            return a < b;
+        });
+        return nums;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Time Complexity**: $O(N \log N \times \log V)$. 
+    * $N \log N$ for the sorting algorithm.
+    * $\log V$ (where $V$ is the max value in `nums`) for the `reflect` 
+      function called inside each comparison.
+* **Space Complexity**: $O(\log N)$ or $O(1)$ extra space depending 
+  on the sorting implementation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Observation**: Reflecting is different from `std::reverse` on a 32-bit 
+  integer because we only consider the bits from the most significant 
+  set bit downwards (ignoring leading zeros).
+* **Optimization**: If $N$ is very large, precomputing reflections in a 
+  `vector<pair<int, int>>` would prevent redundant calls to `reflect()`.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
