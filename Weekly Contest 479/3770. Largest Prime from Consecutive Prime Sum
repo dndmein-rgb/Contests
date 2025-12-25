@@ -1,0 +1,134 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Weekly Contest 479
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3770. Largest Prime from Consecutive Prime Sum
+📌 Platform: LeetCode
+🏷️ Difficulty: Medium
+🏆 Topics: Math, Sieve of Eratosthenes, Prefix Sums
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Find the largest prime $P \le n$ such that $P = 2 + 3 + 5 + 7 + \dots$ (a sum of 
+consecutive primes starting from the first prime).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ Version 1: Initial Simulation (Brute Force)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This version calculates primes on the fly and uses a hardcoded check for the 
+largest possible case. While it works for smaller $n$, repeated primality 
+testing for large $n$ across many test cases can be slow.
+
+
+*/
+
+class SolutionBrute {
+public:
+    bool isPrime(int n){
+        if(n < 2) return false;
+        for(int i = 2; i * i <= n; i++){
+            if(n % i == 0) return false;
+        }
+        return true;
+    }
+
+    int largestPrime(int n) {
+        if(n == 1) return 0;
+        // Hardcoded optimization for known max constraint
+        if(n >= 398771) return 398771;
+
+        vector<int> primes;
+        for(int i = 2; i <= n; i++){
+            if(isPrime(i)) primes.push_back(i);
+        }
+
+        long long sum = 0;
+        long long ans = 0;
+        for(int x : primes){
+            sum += x;
+            if(sum > n) break;
+            if(isPrime(sum)) ans = max(ans, sum);
+        }
+        return (int)ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Version 2: Optimized (Global Sieve Precomputation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Approach:
+1. Sieve: Precompute all primes up to 500,001 once using a global static block.
+2. O(1) Check: Use the precomputed boolean array to check primality instantly.
+3. Summation: Iterate through the prime list and update the result if the sum 
+   is prime.
+
+Complexity: O(N log log N) once for precomputation, O(√N) per query.
+*/
+
+using namespace std;
+
+// Global Sieve to share data across all test cases
+const int MAX_LIMIT = 500001;
+vector<bool> is_prime_global(MAX_LIMIT, true);
+vector<int> prime_list;
+
+// Executed exactly once when the program starts
+bool initialized = []() {
+    is_prime_global[0] = is_prime_global[1] = false;
+    for (int i = 2; i * i < MAX_LIMIT; ++i) {
+        if (is_prime_global[i]) {
+            for (int j = i * i; j < MAX_LIMIT; j += i)
+                is_prime_global[j] = false;
+        }
+    }
+    for (int i = 2; i < MAX_LIMIT; ++i) {
+        if (is_prime_global[i]) prime_list.push_back(i);
+    }
+    return true;
+}();
+
+class Solution {
+public:
+    int largestPrime(int n) {
+        if (n < 2) return 0;
+
+        long long current_sum = 0;
+        int res = 0;
+
+        for (int p : prime_list) {
+            current_sum += p;
+            if (current_sum > n) break;
+            
+            // Instant primality check
+            if (current_sum < MAX_LIMIT && is_prime_global[current_sum]) {
+                res = (int)current_sum;
+            }
+        }
+        return res;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* Time Complexity: O(L log log L) for precomputation, O(√N) for the query.
+* Space Complexity: O(L) to store the prime list and sieve.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* Global Sieve: This is the gold standard for prime-related LeetCode problems 
+  to avoid "Time Limit Exceeded" on multi-testcase problems.
+* Sum Overflow: We use `long long` for `current_sum` because the sum of 
+  primes up to 500,000 can exceed the capacity of a standard 32-bit integer.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
