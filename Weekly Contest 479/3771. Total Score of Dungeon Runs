@@ -1,0 +1,120 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Weekly Contest 479
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3771. Total Score of Dungeon Runs
+📌 Platform: LeetCode
+🏷️ Difficulty: Hard
+🏆 Topics: Prefix Sums, Binary Search, Sliding Window
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A hero starts with initial health `hp`. In a dungeon represented by array `d`, 
+the hero takes damage $d[i]$. To enter a specific room $j$, the hero must 
+satisfy a required health $rq[j]$. We need to find the total number of 
+contiguous dungeon segments $[i, j]$ such that the hero survives all rooms 
+up to $j$ and meets the requirement $rq[j]$.
+
+**Survival Condition:**
+The health after rooms $[i \dots j]$ must be $> 0$ at all steps AND the health 
+immediately before entering room $j$ must be $\ge rq[j]$.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Prefix Sum + Binary Search)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.  **Prefix Sum of Damage**: Let `prefix[k]` be the sum of damage from room 
+    $0$ to $k-1$. The total damage taken in a run from $i$ to $j$ is:
+    $\text{Damage}(i, j) = \text{prefix}[j] - \text{prefix}[i]$.
+2.  **Requirement Inequality**: 
+    The hero survives and meets the requirement at room $j$ if:
+    $$\text{hp} - (\text{prefix}[j] - \text{prefix}[i]) \ge \text{rq}[j]$$
+    Rearranging to find valid starting points $i$:
+    $$\text{prefix}[i] \ge \text{prefix}[j] + \text{rq}[j] - \text{hp}$$
+3.  **Binary Search**: For every fixed end-point $j$, we need to find how many 
+    starting points $i$ ($0 \le i < j$) satisfy the inequality. Since the 
+    `prefix` array is non-decreasing (assuming $d[i] \ge 0$), we can use 
+    `std::lower_bound` to find the first index `idx` that satisfies the condition.
+4.  **Count**: All indices from `idx` up to $j-1$ are valid starting positions.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 Algorithm Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example: `hp = 10`, `d = [2, 3]`, `rq = [5, 4]`
+
+1.  **Prefix**: `[0, 2, 5]`
+2.  **j = 1 (Room 0)**:
+    * `target = prefix[1] + rq[0] - hp = 2 + 5 - 10 = -3`
+    * `lower_bound` on `[0]` for `-3` gives `idx = 0`.
+    * Valid starts: `0` (Room 0). Count = 1.
+3.  **j = 2 (Room 1)**:
+    * `target = prefix[2] + rq[1] - hp = 5 + 4 - 10 = -1`
+    * `lower_bound` on `[0, 2]` for `-1` gives `idx = 0`.
+    * Valid starts: `0, 1`. Count = 2.
+
+**Total Score**: $1 + 2 = 3$.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ Implementation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    long long totalScore(int hp, vector<int>& d, vector<int>& rq) {
+        int n = d.size();
+        long long ans = 0;
+
+        // Step 1: Compute prefix sums of damage
+        // prefix[i] = total damage from room 0 to i-1
+        vector<long long> prefix(n + 1, 0);
+        for (int i = 1; i <= n; i++) {
+            prefix[i] = prefix[i - 1] + d[i - 1];
+        }
+
+        // Step 2: Iterate through each room as a possible dungeon exit
+        for (int j = 1; j <= n; j++) {
+            // Condition derived: prefix[i] >= prefix[j] + rq[j-1] - hp
+            long long target = prefix[j] + rq[j - 1] - hp;
+
+            // Step 3: Binary search for the first index 'i' that works
+            // We search in the range [0, j-1]
+            auto it = lower_bound(prefix.begin(), prefix.begin() + j, target);
+            int idx = it - prefix.begin();
+
+            // All indices from [idx ... j-1] are valid starting points
+            if (idx < j) {
+                ans += (j - idx);
+            }
+        }
+
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Time Complexity**: $O(N \log N)$. We iterate through $N$ rooms, and for 
+  each room, we perform a binary search which takes $O(\log N)$.
+* **Space Complexity**: $O(N)$ to store the prefix sum array.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+* **Condition Check**: The inequality ensures the hero has enough HP 
+  **before** entering the final room $j$.
+* **Non-decreasing Assumption**: This logic assumes $d[i] \ge 0$. If 
+  dungeons could heal the hero (negative $d[i]$), a Segment Tree or Fenwick 
+  Tree would be needed instead of `lower_bound`.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
