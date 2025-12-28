@@ -1,0 +1,291 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 482
+📅 Date: December 29, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3789. Minimum Cost to Acquire Required Items
+📌 Link: https://leetcode.com/problems/minimum-cost-to-acquire-required-items/
+🏷️ Difficulty: Medium
+🏆 Topics: Math, Greedy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- cost1: cost to buy 1 item of type 1
+- cost2: cost to buy 1 item of type 2
+- costBoth: cost to buy 1 of BOTH types (bundle deal)
+- need1: items of type 1 needed
+- need2: items of type 2 needed
+
+Goal:
+- Acquire at least need1 items of type 1
+- Acquire at least need2 items of type 2
+- Minimize total cost
+
+Key Insight:
+- Bundle (costBoth) gives you BOTH items at once
+- Can buy bundles, then top up with individual items
+- Can also buy excess bundles (more than needed)
+
+Example:
+  cost1 = 3, cost2 = 4, costBoth = 5
+  need1 = 2, need2 = 3
+  
+  Strategy 1: Buy separately
+    2×3 + 3×4 = 6 + 12 = 18
+  
+  Strategy 2: Buy 2 bundles + 1 type2
+    2×5 + 1×4 = 10 + 4 = 14
+  
+  Strategy 3: Buy 3 bundles (excess type1 is ok!)
+    3×5 = 15
+  
+  Best: 14
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strategy: Consider 3 Purchase Strategies
+
+Strategy 1: Buy ALL items separately
+  Cost = cost1 × need1 + cost2 × need2
+
+Strategy 2: Buy bundles for min(need1, need2), then top up
+  - Buy k = min(need1, need2) bundles
+  - Buy (need1 - k) of type 1 individually
+  - Buy (need2 - k) of type 2 individually
+  Cost = costBoth × k + cost1 × (need1 - k) + cost2 × (need2 - k)
+
+Strategy 3: Buy ALL as bundles (may have excess)
+  - Buy max(need1, need2) bundles
+  - This covers both requirements with possible excess
+  Cost = costBoth × max(need1, need2)
+
+Return minimum of all three strategies!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: cost1=3, cost2=4, costBoth=5, need1=2, need2=3
+
+Strategy 1: All Separate
+  Cost = 3×2 + 4×3 = 6 + 12 = 18
+
+Strategy 2: Mixed (bundles + individual)
+  k = min(2, 3) = 2
+  Bundles: 2 → gives 2 type1, 2 type2
+  Extra needed: 0 type1, 1 type2
+  Cost = 5×2 + 3×0 + 4×1 = 10 + 0 + 4 = 14 ✅
+
+Strategy 3: All Bundles
+  Buy max(2, 3) = 3 bundles
+  Gives: 3 type1 (1 extra), 3 type2 (perfect)
+  Cost = 5×3 = 15
+
+Minimum: 14
+
+Visualization:
+  Strategy 1: ●● + ●●●● = 18
+  Strategy 2: ⓑⓑ + ● = 14 ✅
+  Strategy 3: ⓑⓑⓑ = 15
+  
+  (ⓑ = bundle gives both)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity:  O(1)
+   └─ Fixed 3 strategy calculations
+   └─ Each strategy: O(1) arithmetic
+   
+💾 Space Complexity: O(1)
+   └─ Only using constant variables
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    typedef long long ll;
+    
+    long long minimumCost(ll cost1, ll cost2, ll costBoth, ll need1, ll need2) {
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Strategy 1: Buy ALL items separately
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        ll ans = cost1 * need1 + cost2 * need2;
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Strategy 2: Buy bundles for min(need1, need2), then top up
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Buy k bundles where k = min(need1, need2)
+        // This gives us k of each type
+        // Then buy remaining items individually
+        ll k = min(need1, need2);
+        ll mixed = costBoth * k +           // k bundles
+                   cost1 * (need1 - k) +    // remaining type1
+                   cost2 * (need2 - k);     // remaining type2
+        
+        ans = min(ans, mixed);
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Strategy 3: Buy ALL as bundles
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Buy max(need1, need2) bundles
+        // This ensures we meet both requirements
+        // (one type might have excess, but that's ok)
+        ll both = costBoth * max(need1, need2);
+        
+        return min(ans, both);
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Why Only 3 Strategies?
+   - These cover all meaningful combinations
+   - Any other mix is suboptimal compared to one of these
+   - Proof by case analysis:
+     • 0 bundles → Strategy 1
+     • Some bundles → Strategy 2 (optimal partial)
+     • Max bundles → Strategy 3
+
+🔑 Why Strategy 3 Makes Sense?
+   - Bundle might be VERY cheap
+   - Example: cost1=100, cost2=100, costBoth=50
+   - Buying all as bundles saves massively even with waste!
+   - Excess items don't cost extra (already paid)
+
+⚠️ Common Mistakes:
+   - Forgetting Strategy 3 (all bundles)
+   - Thinking excess items are wasted cost
+   - Not considering bundle might be cheaper than single item
+
+🎯 When Each Strategy Wins:
+
+Strategy 1 wins when:
+  - Bundles are expensive
+  - cost1 + cost2 < costBoth
+
+Strategy 2 wins when:
+  - Bundles are moderate
+  - Mixed approach balances cost
+
+Strategy 3 wins when:
+  - Bundles are very cheap
+  - costBoth much less than individuals
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Detailed Example Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example 1: Balanced needs
+  cost1=5, cost2=5, costBoth=8, need1=3, need2=3
+  
+  Strategy 1: 5×3 + 5×3 = 30
+  Strategy 2: 8×3 + 5×0 + 5×0 = 24 ✅
+  Strategy 3: 8×3 = 24 ✅
+  
+  Answer: 24
+
+Example 2: Unbalanced needs
+  cost1=2, cost2=10, costBoth=8, need1=5, need2=2
+  
+  Strategy 1: 2×5 + 10×2 = 10 + 20 = 30
+  Strategy 2: 8×2 + 2×3 + 10×0 = 16 + 6 = 22 ✅
+  Strategy 3: 8×5 = 40
+  
+  Answer: 22
+
+Example 3: Super cheap bundle
+  cost1=100, cost2=100, costBoth=10, need1=4, need2=6
+  
+  Strategy 1: 100×4 + 100×6 = 1000
+  Strategy 2: 10×4 + 100×0 + 100×2 = 40 + 200 = 240
+  Strategy 3: 10×6 = 60 ✅
+  
+  Answer: 60
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Mathematical Proof of Optimality
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Claim: One of the 3 strategies is always optimal
+
+Proof:
+Let b = number of bundles bought
+Let x1 = additional type1 bought
+Let x2 = additional type2 bought
+
+Constraints:
+  b + x1 ≥ need1
+  b + x2 ≥ need2
+  b, x1, x2 ≥ 0
+
+Cost function:
+  C(b, x1, x2) = costBoth×b + cost1×x1 + cost2×x2
+
+For ANY valid solution:
+  - If b = 0: This is Strategy 1
+  - If b = min(need1, need2): This is Strategy 2
+  - If b = max(need1, need2): This is Strategy 3
+  - Any other b is dominated by one of above
+
+Therefore, checking these 3 covers all optimal cases! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 Edge Cases
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Case 1: Bundle more expensive than sum
+  cost1=5, cost2=5, costBoth=15
+  Strategy 1 always wins
+
+Case 2: Bundle cheaper than cheapest item
+  cost1=10, cost2=10, costBoth=5
+  Strategy 3 always wins
+
+Case 3: Need only one type
+  need1=5, need2=0 (impossible per constraints)
+  But if allowed: just buy type1
+
+Case 4: Equal needs
+  need1=need2=k
+  Strategy 2 and 3 become same!
+
+Case 5: Huge difference in needs
+  need1=1, need2=1000
+  Strategy 2 likely wins (few bundles + many type2)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Related Problems
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Similar optimization patterns:
+- Minimum Cost to Hire K Workers
+- Shopping Offers (bundle optimization)
+- Integer Break (optimization with constraints)
+- Coin Change (but simpler - fixed denominations)
+- Minimum Cost For Tickets (different time windows)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Learning Points
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ Optimization with multiple strategies
+2. ✅ Bundle pricing problems
+3. ✅ Greedy choice correctness proof
+4. ✅ Considering "waste" might be optimal
+5. ✅ Min/max usage in optimization
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
