@@ -1,0 +1,124 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Problem Number: 3790
+📅 Date: December 28, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 37. Smallest All-Ones Multiple
+📌 Link: https://leetcode.com/problems/smallest-integer-divisible-by-k/ (Similar)
+🏷️ Difficulty: Medium
+🏆 Topics: Math, Number Theory, Modular Arithmetic
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- An integer k.
+
+Goal:
+- Find the length of the smallest positive integer $n$ such that $n$ is divisible by $k$, and $n$ only contains the digit 1 (e.g., 1, 11, 111, ...).
+- If no such $n$ exists, return -1.
+
+Key Insight:
+- An integer consisting only of 1s cannot be even (must end in 1).
+- An integer consisting only of 1s cannot be divisible by 5 (must end in 0 or 5).
+- Therefore, if $k \% 2 == 0$ or $k \% 5 == 0$, it is impossible.
+- We can use modular arithmetic to check sequences of 1s without overflow.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Check Feasibility**:
+   - If $k$ is a multiple of 2 or 5, return -1 immediately.
+
+2. **Iterative Remainder Calculation**:
+   - Start with `remainder = 1 % k` (representing the number "1").
+   - For each step $i$ from 1 up to $k$:
+     - If `remainder == 0`, we found the smallest all-ones number of length $i$.
+     - Otherwise, move to the next all-ones number: `remainder = (remainder * 10 + 1) % k`.
+
+3. **Pigeonhole Principle**:
+   - There are only $k$ possible remainders modulo $k$ ($0$ to $k-1$).
+   - If we don't find a 0 within $k$ iterations, we will enter a cycle, meaning no such number exists.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: k = 3
+
+Iteration 1:
+  - num = 1
+  - 1 % 3 = 1 (Not 0)
+  - Next num: (1 * 10 + 1) % 3 = 11 % 3 = 2
+
+Iteration 2:
+  - num = 11
+  - 11 % 3 = 2 (Not 0)
+  - Next num: (2 * 10 + 1) % 3 = 21 % 3 = 0
+
+Iteration 3:
+  - num = 111
+  - 111 % 3 = 0 ✅
+  - Return: 3
+
+Visualization:
+  1    → rem 1
+  11   → rem 2
+  111  → rem 0 (Found!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(k)
+   └─ We loop at most k times to check all possible remainders.
+   
+💾 Space Complexity: O(1)
+   └─ We only store a single remainder variable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int minAllOneMultiple(int k) {
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 1: Filter out impossible divisors
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        if (k % 2 == 0 || k % 5 == 0) return -1;
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 2: Traverse remainders using Pigeonhole Principle
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        long long remainder = 0;
+        for (int length = 1; length <= k; length++) {
+            // Formula for sequence of 1s: N_i = N_{i-1} * 10 + 1
+            remainder = (remainder * 10 + 1) % k;
+            
+            if (remainder == 0) {
+                return length;
+            }
+        }
+        
+        return -1;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Why length <= k?
+   - By the Pigeonhole Principle, if you take $k+1$ numbers, at least two must have the same remainder when divided by $k$.
+   - If we repeat a remainder, we enter a cycle. If 0 wasn't in the first $k$ remainders, it will never appear.
+
+🔑 Modular Math:
+   - $(A \times 10 + 1) \pmod k$ is equivalent to $( (A \pmod k) \times 10 + 1 ) \pmod k$.
+   - This allows us to handle numbers with thousands of digits using standard integer types.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
