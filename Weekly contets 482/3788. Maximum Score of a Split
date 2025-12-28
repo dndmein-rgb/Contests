@@ -1,0 +1,301 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 482
+📅 Date: December 29, 2024
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3788. Maximum Score of a Split
+📌 Link: https://leetcode.com/problems/maximum-score-of-a-split/
+🏷️ Difficulty: Medium
+🏆 Topics: Array, Prefix Sum, Greedy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given an array nums:
+- Split array into two non-empty parts: left and right
+- Score = (sum of left) - (minimum element in right)
+- Return maximum possible score
+
+Constraints:
+- Must split: at least 1 element on each side
+- Split at position i: left = [0...i], right = [i+1...n-1]
+
+Example:
+  nums = [1, 4, 3, 7, 4, 5]
+  
+  Split at index 3 (after 7):
+    left = [1, 4, 3, 7]  → sum = 15
+    right = [4, 5]       → min = 4
+    score = 15 - 4 = 11
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strategy: Prefix Sum + Suffix Minimum
+
+Key Insights:
+1️⃣ For each split position, we need:
+   - Sum of left part (use prefix sum)
+   - Minimum of right part (use suffix minimum)
+
+2️⃣ Precompute both:
+   - P[i] = sum of nums[0...i]
+   - S[i] = minimum of nums[i...n-1]
+
+3️⃣ Try all valid split positions:
+   - Split at i means: left=[0...i], right=[i+1...n-1]
+   - Score = P[i] - S[i+1]
+
+4️⃣ Return maximum score across all splits
+
+Algorithm:
+1️⃣ Build prefix sum array P
+2️⃣ Build suffix minimum array S
+3️⃣ For each i in [0, n-2], calculate score = P[i] - S[i+1]
+4️⃣ Return maximum score
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: nums = [1, 4, 3, 7, 4, 5]
+
+Step 1: Build Prefix Sum Array P
+  Index:  0  1  2   3   4   5
+  nums:   1  4  3   7   4   5
+  P:      1  5  8  15  19  24
+          ↑  ↑  ↑   ↑   ↑   ↑
+         1  1+4 5+3 8+7 15+4 19+5
+
+Step 2: Build Suffix Minimum Array S
+  Index:  0  1  2  3  4  5
+  nums:   1  4  3  7  4  5
+  S:      1  3  3  4  4  5
+          ↑  ↑  ↑  ↑  ↑  ↑
+      min(1,4,3,7,4,5)=1
+         min(4,3,7,4,5)=3
+            min(3,7,4,5)=3
+               min(7,4,5)=4
+                  min(4,5)=4
+                     min(5)=5
+
+Step 3: Try All Split Positions
+
+Split at i=0: left=[1], right=[4,3,7,4,5]
+  Score = P[0] - S[1] = 1 - 3 = -2
+
+Split at i=1: left=[1,4], right=[3,7,4,5]
+  Score = P[1] - S[2] = 5 - 3 = 2
+
+Split at i=2: left=[1,4,3], right=[7,4,5]
+  Score = P[2] - S[3] = 8 - 4 = 4
+
+Split at i=3: left=[1,4,3,7], right=[4,5]
+  Score = P[3] - S[4] = 15 - 4 = 11 ✅ MAX!
+
+Split at i=4: left=[1,4,3,7,4], right=[5]
+  Score = P[4] - S[5] = 19 - 5 = 14
+
+Step 4: Return Maximum
+  Answer: 11
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity:  O(n)
+   └─ Build prefix sum: O(n)
+   └─ Build suffix minimum: O(n)
+   └─ Try all splits: O(n)
+   └─ Total: O(n)
+   
+💾 Space Complexity: O(n)
+   └─ P array: O(n)
+   └─ S array: O(n)
+   └─ Total: O(n)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    long long maximumScore(vector<int>& nums) {
+        int n = nums.size();
+        
+        // 📊 Arrays for preprocessing
+        vector<long long> P(n);  // Prefix sum
+        vector<long long> S(n);  // Suffix minimum
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 1: Build Prefix Sum Array
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // P[i] = sum of nums[0...i]
+        long long sum = 0;
+        for (int i = 0; i < n; i++) {
+            sum += nums[i];
+            P[i] = sum;
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 2: Build Suffix Minimum Array
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // S[i] = minimum of nums[i...n-1]
+        S[n - 1] = nums[n - 1];  // Last element
+        
+        for (int i = n - 2; i >= 0; i--) {
+            // Current element vs minimum of rest
+            S[i] = min((long long)nums[i], S[i + 1]);
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Step 3: Try All Valid Split Positions
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        long long maxScore = LLONG_MIN;
+        
+        // Split at i means: left=[0...i], right=[i+1...n-1]
+        // Valid splits: i ∈ [0, n-2] (both parts non-empty)
+        for (int i = 0; i < n - 1; i++) {
+            // Score = (sum of left) - (min of right)
+            long long score = P[i] - S[i + 1];
+            maxScore = max(maxScore, score);
+        }
+        
+        return maxScore;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Core Pattern: Prefix/Suffix Preprocessing
+   - Precompute values needed for all splits
+   - Avoid recomputation → O(n²) to O(n)
+
+🔑 Why Suffix Minimum?
+   - Right part's minimum changes as split point moves
+   - Suffix minimum allows O(1) query for any split
+   - Building suffix array: O(n) once
+
+⚠️ Edge Cases:
+   - All positive numbers
+   - All negative numbers
+   - Monotonic increasing/decreasing
+   - Single minimum in middle
+
+🎯 Optimization Strategy:
+   Score = sum(left) - min(right)
+   
+   To maximize:
+   - Want large sum(left)
+   - Want small min(right)
+   
+   Trade-off between both!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Visual Representation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For nums = [1, 4, 3, 7, 4, 5]:
+
+Prefix Sum (P):
+  Index:  0   1   2    3    4    5
+  Value:  1   5   8   15   19   24
+          ↑   ↑   ↑    ↑    ↑    ↑
+         1  1+4 5+3 8+7 15+4 19+5
+
+Suffix Minimum (S):
+  Index:  0   1   2   3   4   5
+  Value:  1   3   3   4   4   5
+          ↑   ↑   ↑   ↑   ↑   ↑
+    min from here to end →
+
+All Splits:
+┌─────┬────────┬─────────┬───────┬─────────┐
+│  i  │ Left   │ Right   │ Score │ Formula │
+├─────┼────────┼─────────┼───────┼─────────┤
+│  0  │ [1]    │[4,3,7,4,5]│ -2  │ 1 - 3   │
+│  1  │ [1,4]  │[3,7,4,5]│  2    │ 5 - 3   │
+│  2  │[1,4,3] │[7,4,5]  │  4    │ 8 - 4   │
+│  3  │[1,4,3,7]│[4,5]   │ 11 ✅ │ 15 - 4  │
+│  4  │[1,4,3,7,4]│[5]   │ 14    │ 19 - 5  │
+└─────┴────────┴─────────┴───────┴─────────┘
+
+Maximum: 11 at split position 3
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Why This Solution is Optimal
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Naive Approach (O(n²)):
+  for i in range(n-1):
+      leftSum = sum(nums[0:i+1])      // O(n)
+      rightMin = min(nums[i+1:n])     // O(n)
+      score = leftSum - rightMin
+  
+  Total: O(n²) ❌
+
+Optimized Approach (O(n)):
+  Precompute prefix sums → O(n)
+  Precompute suffix mins → O(n)
+  Query each split     → O(1) per split × n splits = O(n)
+  
+  Total: O(n) ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 Space Optimization (if needed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Can reduce to O(1) space by computing on-the-fly:
+
+long long maximumScore(vector<int>& nums) {
+    int n = nums.size();
+    long long maxScore = LLONG_MIN;
+    long long leftSum = 0;
+    
+    // First pass: calculate right minimums while building left sum
+    vector<long long> rightMin(n);
+    rightMin[n-1] = nums[n-1];
+    for (int i = n-2; i >= 0; i--) {
+        rightMin[i] = min((long long)nums[i], rightMin[i+1]);
+    }
+    
+    // Second pass: try all splits
+    for (int i = 0; i < n-1; i++) {
+        leftSum += nums[i];
+        maxScore = max(maxScore, leftSum - rightMin[i+1]);
+    }
+    
+    return maxScore;
+}
+
+This uses O(n) space (rightMin only).
+Can't reduce further as we need future info!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Related Problems
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Similar patterns:
+- Maximum Subarray (Kadane's with prefix sum thinking)
+- Best Time to Buy and Sell Stock (prefix/suffix pattern)
+- Trapping Rain Water (prefix max, suffix max)
+- Product of Array Except Self (prefix/suffix products)
+- Range Sum Query (prefix sum applications)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Learning Points
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ Prefix sum for cumulative queries
+2. ✅ Suffix minimum for range minimum
+3. ✅ Preprocessing to optimize queries
+4. ✅ Splitting problems into left/right parts
+5. ✅ Trade-off optimization (sum vs min)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
