@@ -1,0 +1,123 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Biweekly Contest 170
+📅 Date: December 30, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3752. Lexicographically Smallest Negated Permutation
+📌 Link: https://leetcode.com/problems/lexicographically-smallest-negated-permutation-that-sums-to-target/
+🏷️ Difficulty: Medium/Hard
+🏆 Topics: Greedy, Math, Permutations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- An integer n (representing a permutation of 1 to n).
+- A long long target sum.
+
+Goal:
+- Assign a sign (+ or -) to each number in the permutation {1, 2, ..., n}.
+- The total sum must equal the target.
+- The resulting sequence must be the lexicographically smallest possible.
+
+Key Insight:
+- Let the total sum of {1...n} be $S = \frac{n(n+1)}{2}$.
+- If we change the sign of a number $x$ from positive to negative, the total sum decreases by $2x$.
+- Therefore, $(S - \text{target})$ must be even and non-negative. Let $diff = S - \text{target}$. We need to pick a subset of numbers whose sum is $diff/2$ and negate them.
+- To make the sequence lexicographically smallest, we want the most negative (smallest) numbers to appear as early as possible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Feasibility Check**:
+   - Max possible sum is $S$, min is $-S$. If $|target| > S$, return empty.
+   - $(S - target)$ must be even because negating $x$ reduces sum by $2x$.
+
+2. **Greedy Selection for Lexicographical Smallness**:
+   - To get the smallest lexicographical result, we want to place the largest possible negative numbers at the beginning of the result array.
+   - We target the $diff$ remaining. We check numbers from $n$ down to $1$. If a number $j$ can contribute to the $diff$, we negate it and place it in the answer.
+
+3. **Constructing the Result**:
+   - Collect all negated numbers in a set.
+   - Fill the rest of the permutation with positive numbers in increasing order to maintain lexicographical order.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: n = 4, target = 0
+1. Sum $S = (4 \times 5) / 2 = 10$.
+2. $diff = 10 - 0 = 10$. We need to negate values that sum to $diff/2 = 5$.
+3. Greedy choice:
+   - Try negating 4: $5 - 4 = 1$ (Possible). Add -4.
+   - Try negating 1: $1 - 1 = 0$ (Possible). Add -1.
+4. Negated set: {4, 1}. Positive set: {2, 3}.
+5. Lexicographical result: [-4, -1, 2, 3].
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N)
+   └─ We iterate from n down to 1 once to pick negations and once to fill the result.
+   
+💾 Space Complexity: O(N)
+   └─ To store the answer vector and the set of negated indices.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    vector<int> lexSmallestNegatedPerm(int n, long long target) {
+        long long v = n;
+        long long sum = (v * (v + 1)) / 2;
+        
+        // Impossible cases: target out of bounds or parity mismatch
+        if (sum < abs(target)) return {};
+        
+        long long diff = sum - target;
+        if (diff % 2 != 0) return {};
+
+        vector<int> ans;
+        unordered_set<int> negated;
+        long long target_to_negate = diff / 2;
+
+        // Greedy: Negate largest available values first to keep them at the front
+        for (int i = n; i >= 1; i--) {
+            if (target_to_negate >= i) {
+                target_to_negate -= i;
+                ans.push_back(-i);
+                negated.insert(i);
+            }
+        }
+
+        // Fill remaining positive values in increasing order
+        for (int i = 1; i <= n; i++) {
+            if (negated.find(i) == negated.end()) {
+                ans.push_back(i);
+            }
+        }
+
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Why greedy from N to 1?
+   - Lexicographical order prioritizes the first element. The smallest possible numbers we can have are the negative ones. By picking the largest absolute values to negate and putting them at the front, we ensure the sequence starts with the smallest possible integers (e.g., -10 is smaller than -2).
+
+🔑 Parity Requirement:
+   - This is a classic "subset sum" related variation. The relation $\text{Total} = S - 2 \times (\text{sum of negated values})$ is the core mathematical constraint.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
