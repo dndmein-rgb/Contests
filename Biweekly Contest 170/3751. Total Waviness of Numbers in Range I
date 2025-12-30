@@ -1,0 +1,125 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Biweekly Contest 170
+📅 Date: December 30, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3751. Total Waviness of Numbers in Range I
+📌 Link: https://leetcode.com/problems/total-waviness-of-numbers-in-range-i/
+🏷️ Difficulty: Medium
+🏆 Topics: String, Math, Iteration
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- Two integers: num1 and num2.
+
+Goal:
+- Calculate the "Total Waviness" of all numbers in the inclusive range [num1, num2].
+- A "Wavy" point occurs in a number if a digit is strictly greater than or strictly less than both its neighbors (forming a peak or a valley).
+
+Key Insight:
+- A point $s[i]$ is wavy if:
+  1. $s[i] > s[i-1]$ AND $s[i] > s[i+1]$ (Peak)
+  2. $s[i] < s[i-1]$ AND $s[i] < s[i+1]$ (Valley)
+- We iterate through every number in the range, convert it to a string, and count these points.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Range Traversal**:
+   - Use a simple loop from `num1` to `num2`.
+
+2. **Digit Analysis**:
+   - Convert each number to a string to easily access neighboring digits.
+   - For strings of length $L \ge 3$, iterate from index $1$ to $L-2$.
+
+3. **Peak/Valley Detection**:
+   - For each triplet $(s[i-1], s[i], s[i+1])$, check if $s[i]$ is a local extrema.
+   - If conditions are met, increment the global waviness counter.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: num1 = 121, num2 = 121
+
+Number: "121"
+- i = 1: prev=1, curr=2, next=1
+- Condition: (2 > 1 && 2 > 1) is TRUE (Peak).
+- Waviness = 1.
+
+Input: num1 = 123, num2 = 123
+- i = 1: prev=1, curr=2, next=3
+- Condition: (2 > 1 && 2 > 3) is FALSE, (2 < 1 && 2 < 3) is FALSE.
+- Waviness = 0.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N * D)
+   └─ N is the number of integers in range (num2 - num1).
+   └─ D is the number of digits in the integers (log10 of the numbers).
+   
+💾 Space Complexity: O(D)
+   └─ To store the string representation of the current number.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    /**
+     * Checks a string for "wavy" points where a digit is a local peak or valley.
+     * Updates the total count by reference.
+     */
+    int isWavy(string& s, int &count) {
+        int n = s.length();
+        if (n < 3) return 0;
+        
+        for (int i = 1; i < n - 1; i++) {
+            int prev = s[i - 1] - '0';
+            int curr = s[i] - '0';
+            int next = s[i + 1] - '0';
+            
+            // Check for Peak or Valley
+            if ((curr > prev && curr > next) || (curr < prev && curr < next)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    int totalWaviness(int num1, int num2) {
+        int count = 0;
+        for (int i = num1; i <= num2; i++) {
+            string s = to_string(i);
+            isWavy(s, count);
+        }
+        return count;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Optimization Note:
+   - For Range I (small constraints), brute force iteration is sufficient.
+   - For a "Range II" version with much larger constraints (e.g., up to 10^18), 
+     a **Digit DP** approach would be required to calculate the sum efficiently 
+     without iterating through every number.
+
+⚠️ Boundary Conditions:
+   - Numbers with fewer than 3 digits (0-99) automatically have 0 waviness as they 
+     cannot have a digit with both a left and right neighbor.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
