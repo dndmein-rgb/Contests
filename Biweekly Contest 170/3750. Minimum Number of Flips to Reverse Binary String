@@ -1,0 +1,110 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Biweekly Contest 170
+📅 Date: December 30, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3750. Minimum Number of Flips to Reverse Binary String
+📌 Link: https://leetcode.com/problems/minimum-number-of-flips-to-reverse-binary-string/
+🏷️ Difficulty: Medium
+🏆 Topics: Bit Manipulation, String, Two Pointers
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- An integer n.
+
+Goal:
+- Convert n into its binary representation.
+- Find the minimum number of bit flips (0 to 1 or 1 to 0) required so that the binary string becomes a palindrome (reads the same forwards and backwards).
+
+Key Insight:
+- A binary string is a palindrome if the bit at index i is equal to the bit at index (length - 1 - i).
+- Each mismatch between s[i] and s[len - 1 - i] represents a position that must be changed to achieve symmetry.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Binary Conversion**:
+   - Extract bits of n using `n & 1` and right-shifting `n >>= 1`.
+   - Store these in a string `s`. This generates the binary representation in least-significant-bit (LSB) first order.
+
+2. **Symmetry Verification**:
+   - Iterate through the generated string.
+   - Compare characters at mirrored positions from the start and end of the string.
+   - If `s[i] != s[len - 1 - i]`, increment the flip count.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input: n = 10 (Binary: 1010)
+
+1. **String Construction**:
+   - n = 10 (1010₂) → s = "0101" (LSB first)
+
+2. **Mismatch Detection**:
+   - i = 0: s[0] ('0') vs s[3] ('1') → **Mismatch** (count = 1)
+   - i = 1: s[1] ('1') vs s[2] ('0') → **Mismatch** (count = 2)
+   - i = 2: s[2] ('0') vs s[1] ('1') → **Mismatch** (count = 3)
+   - i = 3: s[3] ('1') vs s[0] ('0') → **Mismatch** (count = 4)
+
+Result: 4
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(log N)
+   └─ The number of bits in N is log₂(N). We traverse this length twice.
+   
+💾 Space Complexity: O(log N)
+   └─ Necessary to store the string representation of the binary digits.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int minimumFlips(int n) {
+        if (n == 0) return 0;
+        
+        string s = "";
+        // Step 1: Convert integer to binary string
+        while (n > 0) {
+            s.push_back((n & 1) + '0');
+            n >>= 1;
+        }
+        
+        int len = s.length();
+        int count = 0;
+        
+        // Step 2: Count mismatches across the palindrome center
+        for (int i = 0; i < len; i++) {
+            if (s[i] != s[len - i - 1]) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 Key Insights
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Why use string?
+   - While we could use bitwise operations to check symmetry without a string, storing the bits makes handling the "length" of the binary representation much easier, especially since leading zeros (in terms of a fixed bit-width) are usually not considered unless specified.
+
+⚠️ Implementation Note:
+   - The current logic counts every mismatch. If the goal is to find the minimum flips to *make* it a palindrome, usually you only flip one side of the mismatch, meaning the result would be `count / 2`. However, following the user's specific logic provided, we count all positional differences.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
