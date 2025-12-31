@@ -25,8 +25,9 @@ Goal:
 Key Insight:
 - Let the total sum of {1...n} be $S = \frac{n(n+1)}{2}$.
 - If we change the sign of a number $x$ from positive to negative, the total sum decreases by $2x$.
-- Therefore, $(S - \text{target})$ must be even and non-negative. Let $diff = S - \text{target}$. We need to pick a subset of numbers whose sum is $diff/2$ and negate them.
-- To make the sequence lexicographically smallest, we want the most negative (smallest) numbers to appear as early as possible.
+- Therefore, $(S - \text{target})$ must be even and non-negative. 
+- Let $diff = (S - \text{target}) / 2$. We need to pick a subset of numbers whose sum is exactly $diff$ and negate them.
+- To make the sequence lexicographically smallest, we want the most negative numbers (like $-n, -(n-1)$) to appear as early as possible.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💡 Approach
@@ -34,42 +35,20 @@ Key Insight:
 
 1. **Feasibility Check**:
    - Max possible sum is $S$, min is $-S$. If $|target| > S$, return empty.
-   - $(S - target)$ must be even because negating $x$ reduces sum by $2x$.
+   - $(S - target)$ must be even because negating $x$ reduces the sum by an even amount ($2x$).
 
 2. **Greedy Selection for Lexicographical Smallness**:
-   - To get the smallest lexicographical result, we want to place the largest possible negative numbers at the beginning of the result array.
-   - We target the $diff$ remaining. We check numbers from $n$ down to $1$. If a number $j$ can contribute to the $diff$, we negate it and place it in the answer.
+   - Smallest lexicographical order means putting the smallest possible numbers at the front.
+   - Since $-n$ is the smallest possible value we can create, we check numbers from $n$ down to $1$. 
+   - If a number $i$ can fit into our remaining $diff$, we mark it for negation.
 
 3. **Constructing the Result**:
-   - Collect all negated numbers in a set.
-   - Fill the rest of the permutation with positive numbers in increasing order to maintain lexicographical order.
-
-
+   - First, append all negated numbers from largest absolute value to smallest (e.g., $-n, -(n-1)...$).
+   - Then, append all remaining positive numbers in increasing order ($1, 2, 3...$).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 Example Walkthrough
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
 
-Input: n = 4, target = 0
-1. Sum $S = (4 \times 5) / 2 = 10$.
-2. $diff = 10 - 0 = 10$. We need to negate values that sum to $diff/2 = 5$.
-3. Greedy choice:
-   - Try negating 4: $5 - 4 = 1$ (Possible). Add -4.
-   - Try negating 1: $1 - 1 = 0$ (Possible). Add -1.
-4. Negated set: {4, 1}. Positive set: {2, 3}.
-5. Lexicographical result: [-4, -1, 2, 3].
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚡ Complexity Analysis
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⏰ Time Complexity: O(N)
-   └─ We iterate from n down to 1 once to pick negations and once to fill the result.
-   
-💾 Space Complexity: O(N)
-   └─ To store the answer vector and the set of negated indices.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class Solution {
 public:
     vector<int> lexSmallestNegatedPerm(int n, long long target) {
@@ -94,11 +73,12 @@ public:
             }
         }
 
+        // If we couldn't reach the exact diff, return empty
         if (diff != 0) return {};
 
         vector<int> ans;
 
-        // Negatives first (already lexicographically smallest)
+        // Negatives first (largest absolute values appear first to be smallest)
         for (int i = n; i >= 1; i--) {
             if (neg[i]) ans.push_back(-i);
         }
@@ -114,52 +94,25 @@ public:
 
 /*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🗓️ Contest: LeetCode Biweekly Contest 170
-📅 Date: December 30, 2025
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎯 Problem: 3752. Lexicographically Smallest Negated Permutation
-📌 Link: https://leetcode.com/problems/lexicographically-smallest-negated-permutation-that-sums-to-target/
-🏷️ Difficulty: Medium/Hard
-🏆 Topics: Greedy, Math, Permutations
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📖 Problem Summary
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Given:
-- An integer n (permutation of 1 to n).
-- A target sum.
-
-Goal:
-- Negate some numbers in the set {1, 2, ..., n} such that the total sum equals target.
-- The resulting sequence must be the lexicographically smallest.
-
-Key Insight:
-- Let $S$ be the sum of $1 \dots n$. Negating a number $x$ changes the total sum from $S$ to $S - 2x$.
-- The required "reduction" is $S - \text{target}$. Therefore, $S - \text{target}$ must be even and non-negative.
-- We need to find a subset of $\{1, \dots, n\}$ that sums exactly to $(S - \text{target}) / 2$.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 Approach
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. **Greedy Subset Sum**: 
-   To make the permutation lexicographically smallest, we want the most negative values at the start. Since $-n < -(n-1)$, we prioritize negating the largest available numbers. This also helps satisfy the subset sum requirement efficiently.
-
-2. **Ordering**:
-   - First, append all negated values in descending order of their absolute value (e.g., $-n, -(n-1) \dots$).
-   - Second, append all remaining positive values in ascending order (e.g., $1, 2, 3 \dots$).
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ Complexity Analysis
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⏰ Time Complexity: O(N)
-   └─ We iterate through the range [1, n] to select negations and once more to build the result.
-
+   └─ Single loop to pick negations and two loops to construct the result array.
+   
 💾 Space Complexity: O(N)
-   └─ We use a boolean vector of size N to track negated numbers and an output vector.
+   └─ Boolean vector `neg` takes O(N) space, and the result vector `ans` takes O(N).
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough (n=4, target=0)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Sum $S = 10$. Target = 0.
+2. $diff = (10 - 0) / 2 = 5$.
+3. Greedy: 
+   - Can we take 4? Yes. $diff = 5 - 4 = 1$. Mark neg[4] = true.
+   - Can we take 3? No ($3 > 1$).
+   - Can we take 2? No ($2 > 1$).
+   - Can we take 1? Yes. $diff = 1 - 1 = 0$. Mark neg[1] = true.
+4. Result: [-4, -1, 2, 3]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 */
