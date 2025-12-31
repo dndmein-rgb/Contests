@@ -70,38 +70,42 @@ Input: n = 4, target = 0
    └─ To store the answer vector and the set of negated indices.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*/
-
 class Solution {
 public:
     vector<int> lexSmallestNegatedPerm(int n, long long target) {
-        long long v = n;
-        long long sum = (v * (v + 1)) / 2;
-        
-        // Impossible cases: target out of bounds or parity mismatch
-        if (sum < abs(target)) return {};
-        
+        long long sum = 1LL * n * (n + 1) / 2;
+
+        // Absolute bound check
+        if (llabs(target) > sum) return {};
+
+        // Difference must be even
         long long diff = sum - target;
         if (diff % 2 != 0) return {};
 
-        vector<int> ans;
-        unordered_set<int> negated;
-        long long target_to_negate = diff / 2;
+        diff /= 2;  // now we need subset sum = diff
 
-        // Greedy: Negate largest available values first to keep them at the front
-        for (int i = n; i >= 1; i--) {
-            if (target_to_negate >= i) {
-                target_to_negate -= i;
-                ans.push_back(-i);
-                negated.insert(i);
+        vector<bool> neg(n + 1, false);
+
+        // Pick largest values first to get most negative lexicographically
+        for (int i = n; i >= 1 && diff > 0; i--) {
+            if (i <= diff) {
+                neg[i] = true;
+                diff -= i;
             }
         }
 
-        // Fill remaining positive values in increasing order
+        if (diff != 0) return {};
+
+        vector<int> ans;
+
+        // Negatives first (already lexicographically smallest)
+        for (int i = n; i >= 1; i--) {
+            if (neg[i]) ans.push_back(-i);
+        }
+
+        // Then positives in increasing order
         for (int i = 1; i <= n; i++) {
-            if (negated.find(i) == negated.end()) {
-                ans.push_back(i);
-            }
+            if (!neg[i]) ans.push_back(i);
         }
 
         return ans;
@@ -110,14 +114,52 @@ public:
 
 /*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎓 Key Insights
+🗓️ Contest: LeetCode Biweekly Contest 170
+📅 Date: December 30, 2025
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💡 Why greedy from N to 1?
-   - Lexicographical order prioritizes the first element. The smallest possible numbers we can have are the negative ones. By picking the largest absolute values to negate and putting them at the front, we ensure the sequence starts with the smallest possible integers (e.g., -10 is smaller than -2).
+🎯 Problem: 3752. Lexicographically Smallest Negated Permutation
+📌 Link: https://leetcode.com/problems/lexicographically-smallest-negated-permutation-that-sums-to-target/
+🏷️ Difficulty: Medium/Hard
+🏆 Topics: Greedy, Math, Permutations
 
-🔑 Parity Requirement:
-   - This is a classic "subset sum" related variation. The relation $\text{Total} = S - 2 \times (\text{sum of negated values})$ is the core mathematical constraint.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- An integer n (permutation of 1 to n).
+- A target sum.
+
+Goal:
+- Negate some numbers in the set {1, 2, ..., n} such that the total sum equals target.
+- The resulting sequence must be the lexicographically smallest.
+
+Key Insight:
+- Let $S$ be the sum of $1 \dots n$. Negating a number $x$ changes the total sum from $S$ to $S - 2x$.
+- The required "reduction" is $S - \text{target}$. Therefore, $S - \text{target}$ must be even and non-negative.
+- We need to find a subset of $\{1, \dots, n\}$ that sums exactly to $(S - \text{target}) / 2$.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Greedy Subset Sum**: 
+   To make the permutation lexicographically smallest, we want the most negative values at the start. Since $-n < -(n-1)$, we prioritize negating the largest available numbers. This also helps satisfy the subset sum requirement efficiently.
+
+2. **Ordering**:
+   - First, append all negated values in descending order of their absolute value (e.g., $-n, -(n-1) \dots$).
+   - Second, append all remaining positive values in ascending order (e.g., $1, 2, 3 \dots$).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N)
+   └─ We iterate through the range [1, n] to select negations and once more to build the result.
+
+💾 Space Complexity: O(N)
+   └─ We use a boolean vector of size N to track negated numbers and an output vector.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 */
