@@ -1,61 +1,51 @@
-# LeetCode Weekly Contest 477 Solutions
+# 🏁 Weekly Contest 477 Solutions
 
-This repository contains optimized C++ solutions for the problems from **LeetCode Weekly Contest 477** (December 21, 2025). Each solution is designed for maximum efficiency and includes a breakdown of the logic used.
-
----
-
-## 📂 Repository Structure
-
-| Problem # | Name | Last Commit Message | Date |
-| :--- | :--- | :--- | :--- |
-| **3754** | [Concatenate Non-Zero Digits and Multiply by Sum I](#3754-i) | Create 3754. Concatenate Non-Zero Digits and Multiply by Sum I | 2 weeks ago |
-| **3755** | [Find Maximum Balanced XOR Subarray Length](#3755) | Create 3755. Find Maximum Balanced XOR Subarray Length | 2 weeks ago |
-| **3756** | [Concatenate Non-Zero Digits and Multiply by Sum II](#3756-ii) | Update 3756. Concatenate Non-Zero Digits and Multiply by Sum II | 2 weeks ago |
+This folder contains my optimized solutions for the problems featured in LeetCode Weekly Contest 477.
 
 ---
 
-## 🎯 Problem Summaries
+## 🚀 Problems Overview
 
-### 3754. Concatenate Non-Zero Digits and Multiply by Sum I
-**Difficulty:** Easy  
-**Topics:** Math, Simulation  
-**Logic:** Extract digits from right-to-left using `n % 10`. To maintain the original order without using strings, we use a `multiplier` that grows by powers of 10. Each non-zero digit is placed at the "front" of the number being built.  
-**Complexity:** $O(\log_{10} N)$ Time | $O(1)$ Space.
+| Problem | Difficulty | Key Concept | Time | Space |
+| :--- | :--- | :--- | :--- | :--- |
+| [Q1. Concatenate Non-Zero Digits I](#-q1-concatenate-non-zero-digits-and-multiply-by-sum-i) | **Easy** | Math / Simulation | $O(\log N)$ | $O(1)$ |
+| [Q2. Balanced XOR Subarray](#-q2-find-maximum-balanced-xor-subarray-length) | **Medium** | Prefix XOR / Hash Map | $O(N \log N)$ | $O(N)$ |
+| [Q3. Concatenate Non-Zero Digits II](#-q3-concatenate-non-zero-digits-and-multiply-by-sum-ii) | **Hard** | Rolling Hash / Prefix Sums | $O(N + Q)$ | $O(N)$ |
+
+---
+
+## 🛠️ Problem Breakdowns
+
+### 🧩 Q1. Concatenate Non-Zero Digits and Multiply by Sum I
+**Strategy:** Extract digits using modulo 10 and filter out zeros. Instead of string manipulation, use a mathematical multiplier to preserve the original order.
+* **Logic:** As we find each non-zero digit $d$ from right to left, update the number using: 
+  $$num = (d \times multiplier) + num$$ 
+  and increment the multiplier by $10$ for the next non-zero digit found.
 
 
 
-### 3755. Find Maximum Balanced XOR Subarray Length
-**Difficulty:** Medium  
-**Topics:** Prefix XOR, Hash Table, Prefix Sum  
-**Logic:** A subarray is "balanced" and has a 0-XOR sum if the state `{PrefixXor, OddEvenDifference}` is identical at two different indices. We use a `std::map` to store the first occurrence of each state to calculate the maximum distance.  
-**Complexity:** $O(N \log N)$ Time | $O(N) Space.
+### 🧩 Q2. Find Maximum Balanced XOR Subarray Length
+**Strategy:** A subarray is "balanced" (equal odd/even) and has a 0-XOR sum if the cumulative state remains unchanged between two indices.
+* **Mechanism:** Maintain a prefix XOR and a balance counter ($+1$ for odd, $-1$ for even). Store the state `{xor_prefix, balance_prefix}` in a map. If the state repeats at index $j$ after being seen at index $i$, the subarray $(i, j]$ satisfies both conditions.
 
 
 
-### 3756. Concatenate Non-Zero Digits and Multiply by Sum II
-**Difficulty:** Hard  
-**Topics:** Rolling Hash, Prefix Sum, Modular Arithmetic  
-**Logic:** This version requires handling large queries ($10^5$). We precompute:
-1. `prefSum`: Prefix sum of non-zero digits.
-2. `prefNum`: Prefix value of digits treated as a rolling hash (base 10).
-3. `nzCount`: Running count of non-zero digits to determine the shift.
-**Complexity:** $O(N + Q)$ Time | $O(N)$ Space.
+### 🧩 Q3. Concatenate Non-Zero Digits and Multiply by Sum II
+**Strategy:** For large range queries, brute force fails. We treat the non-zero digits as a base-10 rolling hash to allow $O(1)$ extraction of any substring value.
+* **Mechanism:** 1. **prefSum**: Prefix sum of non-zero digits for $O(1)$ sum queries.
+    2. **prefNum**: Rolling hash of digits where $prefNum[i] = (prefNum[i-1] \times 10 + digit) \pmod M$.
+    3. **pow10**: Precomputed powers of 10 to "shift" prefixes correctly.
+* **Formula:** The value of a range $[L, R]$ is calculated as:
+  $$Value(L, R) = (PrefNum[R] - PrefNum[L-1] \times 10^{nz\_count(L, R)}) \pmod M$$
 
 
 
 ---
 
-## 🛠️ Usage
+## 📈 Performance Summary
+* **Q1:** Optimized to avoid string overhead, resulting in $O(1)$ auxiliary space.
+* **Q2:** Used `std::map<pair<int, int>, int>` for coordinate-like states, ensuring $O(N \log N)$ stability.
+* **Q3:** Achieved linear precomputation $O(N)$, allowing all $Q$ queries to be answered in constant time, preventing TLE (Time Limit Exceeded).
 
-Each solution is contained within a `Solution` class. To test locally:
-
-1. Copy the code into your IDE.
-2. Provide the necessary headers:
-   ```cpp
-   #include <iostream>
-   #include <vector>
-   #include <string>
-   #include <algorithm>
-   #include <map>
-   #include <unordered_map>
-   using namespace std;
+---
+[← Back to Root Repository](../../README.md)
