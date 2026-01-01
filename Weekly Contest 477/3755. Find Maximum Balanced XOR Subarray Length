@@ -1,0 +1,103 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 477
+📅 Date: December 21, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3755. Find Maximum Balanced XOR Subarray Length
+📌 Link: https://leetcode.com/problems/find-maximum-balanced-xor-subarray-length/
+🏷️ Difficulty: Medium
+🏆 Topics: Hash Table, Prefix Sum, Bit Manipulation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- An integer array `nums`.
+
+Goal:
+- Find the maximum length of a subarray where:
+    1. The XOR sum of all elements is 0.
+    2. The number of even elements equals the number of odd elements (Balanced).
+
+Key Insight:
+- A subarray `nums[j...i]` has XOR sum 0 if $PrefixXor[i] \oplus PrefixXor[j-1] = 0$, which means $PrefixXor[i] == PrefixXor[j-1]$.
+- A subarray is balanced if the difference between odd and even counts is the same at both indices. 
+- We can combine these two conditions into a single state: `{PrefixXor, BalanceCount}`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **State Tracking**: 
+   - Maintain `Xor` (prefix XOR sum).
+   - Maintain `balance` (increment by 1 for odd, decrement by 1 for even).
+
+2. **Hash Map Storage**: 
+   - Use a map to store the first time we encounter a specific `{Xor, balance}` pair.
+   - Initialize `mp[{0, 0}] = -1` to handle subarrays starting from index 0.
+
+3. **Length Calculation**:
+   - For each index `i`, check if `{Xor, balance}` exists in the map.
+   - If it exists, the subarray from `mp[{Xor, balance}] + 1` to `i` is a valid candidate. Update `length = max(length, i - mp[state])`.
+   - If it doesn't exist, store the current index `i` as the earliest occurrence.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int maxBalancedSubarray(vector<int>& nums) {
+        // Map stores {PrefixXor, BalanceDiff} -> Earliest Index
+        map<pair<int, int>, int> mp;
+        int balance = 0;
+        int Xor = 0;
+        int length = 0;
+        
+        // Base case: empty prefix has 0 XOR and 0 Balance at "index -1"
+        mp[{0, 0}] = -1;
+        
+        for (int i = 0; i < nums.size(); i++) {
+            // Update XOR prefix
+            Xor ^= nums[i];
+            
+            // Update Balance prefix (Odd: +1, Even: -1)
+            nums[i] % 2 == 0 ? balance -= 1 : balance += 1;
+            
+            pair<int, int> state = {Xor, balance};
+            
+            if (mp.find(state) != mp.end()) {
+                // If this state was seen before, the range between then and now
+                // has net 0 XOR change and net 0 Balance change.
+                length = max(length, i - mp[state]);
+            } else {
+                // Store only the first occurrence to maximize subarray length
+                mp[state] = i;
+            }
+        }
+        
+        return length;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N log N)
+   └─ We iterate through the array once. Each map operation (find/insert) 
+      takes O(log N) due to the underlying Red-Black Tree in `std::map`.
+   
+💾 Space Complexity: O(N)
+   └─ In the worst case, we store a unique state for every index in the map.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Optimization Note
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Using `std::unordered_map` with a custom hash function for the `pair<int, int>` 
+could potentially improve the average time complexity to O(N). However, 
+`std::map` is safer against collision-based worst-case scenarios in contests.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
