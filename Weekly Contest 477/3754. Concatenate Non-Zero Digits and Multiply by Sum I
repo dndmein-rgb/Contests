@@ -1,0 +1,162 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 477
+📅 Date: December 21, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3754. Concatenate Non-Zero Digits and Multiply by Sum I
+📌 Link: https://leetcode.com/problems/concatenate-non-zero-digits-and-multiply-by-sum-i/
+🏷️ Difficulty: Easy
+🏆 Topics: Math, String, Simulation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- A positive integer n.
+
+Goal:
+1. Extract all non-zero digits of n.
+2. Concatenate these digits in their original order to form a new number.
+3. Calculate the sum of these non-zero digits.
+4. Return the product of the concatenated number and the sum.
+
+Key Insight:
+- Digit extraction usually gives digits in reverse order (using modulo 10).
+- We must ignore '0' entirely for both the sum and the concatenation.
+- Since we need the original order for concatenation, we can either store digits in a string and reverse them, or extract them and prepend.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Digit Extraction**: Use `n % 10` to get the last digit and `n / 10` to move to the next.
+2. **Filtering**: If the digit is non-zero:
+   - Add it to the running `sum`.
+   - Convert it to a character and push it into a string `s`.
+3. **Reconstruction**: 
+   - Because `n % 10` extracts digits from right-to-left, the string `s` is currently reversed. 
+   - Reverse `s` to get the digits in their original relative order.
+4. **Final Calculation**: Convert the string to a `long long` using `stoll()` and multiply by the `sum`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    long long sumAndMultiply(int n) {
+        if (n == 0) return 0;
+        
+        string s = "";
+        long long sum = 0;
+        
+        // Extract digits using modulo
+        while (n > 0) {
+            int digit = n % 10;
+            n /= 10;
+            
+            if (digit != 0) {
+                sum += digit;
+                s.push_back(digit + '0');
+            }
+        }
+        
+        // Digits were collected in reverse order (least significant first)
+        // Reverse back to maintain original order
+        string x = s;
+        reverse(x.begin(), x.end());
+        
+        // Handle empty string case (though n is usually positive)
+        if (x.empty()) return 0;
+        
+        long long num = stoll(x);
+
+        return num * sum;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(log N)
+   └─ The number of iterations is proportional to the number of digits in n.
+   
+💾 Space Complexity: O(log N)
+   └─ We store the digits in a string before converting back to a number.
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Mathematical Alternative (No String Conversion)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instead of reversing a string, we can build the number "digit by digit" 
+mathematically. Since we extract digits from right-to-left, we use a 
+multiplier (place value) that increases by 10 each time we find a non-zero digit.
+
+1. Initialize `num = 0`, `sum = 0`, and `multiplier = 1`.
+2. Extract digit `d = n % 10`.
+3. If `d > 0`:
+   - `sum += d`
+   - `num = num + (d * multiplier)`
+   - `multiplier *= 10`
+4. Return `num * sum`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    long long sumAndMultiply(int n) {
+        long long concatenatedNum = 0;
+        long long digitSum = 0;
+        long long multiplier = 1;
+        
+        while (n > 0) {
+            int digit = n % 10;
+            if (digit != 0) {
+                digitSum += digit;
+                // Place the digit at the current "front" of the new number
+                concatenatedNum = (digit * multiplier) + concatenatedNum;
+                multiplier *= 10;
+            }
+            n /= 10;
+        }
+        
+        return concatenatedNum * digitSum;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(log₁₀ N)
+   └─ The number of iterations is exactly equal to the number of digits in n. 
+      For an integer n, there are $\lfloor \log_{10}(n) \rfloor + 1$ digits.
+   
+💾 Space Complexity: O(1)
+   └─ Unlike the string approach, we only use a few long long variables. 
+      No extra linear space (strings or vectors) is allocated.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Visual Logic (Example: n = 503)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Extract 3: sum=3, num = (3 * 1) + 0 = 3, mult = 10
+- Extract 0: Skip
+- Extract 5: sum=8, num = (5 * 10) + 3 = 53, mult = 100
+- Result: 53 * 8 = 424
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough (n = 1024)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Digits extracted: 4, 2, 0, 1.
+2. Non-zero digits: [4, 2, 1]. Sum = 7.
+3. String s = "421". Reversed x = "124".
+4. Concatenated number = 124.
+5. Result = 124 * 7 = 868.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
