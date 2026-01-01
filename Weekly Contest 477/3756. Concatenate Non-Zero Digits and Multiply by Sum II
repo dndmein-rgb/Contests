@@ -1,0 +1,96 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 477
+📅 Date: December 21, 2025
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3756. Concatenate Non-Zero Digits and Multiply by Sum II
+📌 Link: https://leetcode.com/problems/concatenate-non-zero-digits-and-multiply-by-sum-ii/
+🏷️ Difficulty: Hard
+🏆 Topics: String, Math, Prefix Sum, Rolling Hash
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- A string `s` consisting of digits.
+- A 2D array `q` where each `q[i] = [l, r]` represents a range query.
+
+Goal:
+- For each query, extract non-zero digits in the range $[l, r]$.
+- Form a number by concatenating them in original order (modulo $10^9 + 7$).
+- Multiply that number by the sum of its non-zero digits (modulo $10^9 + 7$).
+
+Key Insight:
+- Concatenating digits is similar to calculating a **Rolling Hash** or a base-10 positional value. 
+- If we have digits $d_1, d_2, d_3$, the value is $((d_1 \cdot 10 + d_2) \cdot 10 + d_3)$.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Current: Brute Force)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Iterate Queries**: Loop through each query range $[l, r]$.
+2. **Filter & Accumulate**:
+   - For every character in the range, if it's not '0':
+     - Update the digit sum.
+     - Shift the current number left (`num * 10`) and add the new digit.
+3. **Modular Arithmetic**: Apply `% 1000000007` at each addition and multiplication to prevent overflow.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    vector<int> sumAndMultiply(string s, vector<vector<int>>& q) {
+        const int mod = 1000000007;
+        int n = q.size();
+        vector<int> ans(n);
+
+        for (int qi = 0; qi < n; qi++) {
+            int l = q[qi][0];
+            int r = q[qi][1];
+            long long num = 0;
+            long long digitSum = 0;
+
+            for (int i = l; i <= r; i++) {
+                int d = s[i] - '0';
+                if (d != 0) {
+                    // Positional value update: shift left and add
+                    num = (num * 10 + d) % mod;
+                    digitSum += d;
+                }
+            }
+            // Final product calculation
+            long long product = (num % mod) * (digitSum % mod) % mod;
+            ans[qi] = (int)product;
+        }
+
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(Q × N)
+   └─ In the worst case, for every query, we iterate over the entire string.
+   
+💾 Space Complexity: O(1) 
+   └─ Excluding the space for the output vector.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 Optimization Strategy (For Large Constraints)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+To achieve O(N + Q), use:
+1. **Prefix Sum for Digit Sum**: `prefSum[i]` stores sum of non-zero digits up to `i`.
+   `sum(l, r) = prefSum[r] - prefSum[l-1]`.
+2. **Prefix Hash for Concatenation**: Treat the string of non-zero digits as a 
+   large number. 
+   `Value(l, r) = (prefNum[r] - prefNum[l-1] * 10^(count_of_nonzero(l, r))) % mod`.
+3. **Non-zero Counter**: A prefix array to count how many non-zero digits exist 
+   up to index `i` to know which power of 10 to use.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
