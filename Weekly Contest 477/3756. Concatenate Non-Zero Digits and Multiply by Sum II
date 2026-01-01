@@ -7,40 +7,25 @@
 🎯 Problem: 3756. Concatenate Non-Zero Digits and Multiply by Sum II
 📌 Link: https://leetcode.com/problems/concatenate-non-zero-digits-and-multiply-by-sum-ii/
 🏷️ Difficulty: Hard
-🏆 Topics: String, Math, Prefix Sum, Rolling Hash
+🏆 Topics: Prefix Sum, Rolling Hash, Math, String
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📖 Problem Summary
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Given:
-- A string `s` consisting of digits.
-- A 2D array `q` where each `q[i] = [l, r]` represents a range query.
-
-Goal:
-- For each query, extract non-zero digits in the range $[l, r]$.
-- Form a number by concatenating them in original order (modulo $10^9 + 7$).
-- Multiply that number by the sum of its non-zero digits (modulo $10^9 + 7$).
-
-Key Insight:
-- Concatenating digits is similar to calculating a **Rolling Hash** or a base-10 positional value. 
-- If we have digits $d_1, d_2, d_3$, the value is $((d_1 \cdot 10 + d_2) \cdot 10 + d_3)$.
+Given a string `s` of digits and several range queries `[l, r]`:
+1. Extract all non-zero digits in the range.
+2. Concatenate them to form a number $num$.
+3. Find the sum of those non-zero digits $digitSum$.
+4. Return $(num \times digitSum) \pmod{10^9 + 7}$.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 Approach (Current: Brute Force)
+💡 Solution 1: Brute Force (O(Q * N))
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. **Iterate Queries**: Loop through each query range $[l, r]$.
-2. **Filter & Accumulate**:
-   - For every character in the range, if it's not '0':
-     - Update the digit sum.
-     - Shift the current number left (`num * 10`) and add the new digit.
-3. **Modular Arithmetic**: Apply `% 1000000007` at each addition and multiplication to prevent overflow.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Suitable for small constraints. We iterate through the range for every query.
 */
 
-class Solution {
+class SolutionBruteForce {
 public:
     vector<int> sumAndMultiply(string s, vector<vector<int>>& q) {
         const int mod = 1000000007;
@@ -48,49 +33,93 @@ public:
         vector<int> ans(n);
 
         for (int qi = 0; qi < n; qi++) {
-            int l = q[qi][0];
-            int r = q[qi][1];
-            long long num = 0;
-            long long digitSum = 0;
-
+            int l = q[qi][0], r = q[qi][1];
+            long long num = 0, digitSum = 0;
+            
             for (int i = l; i <= r; i++) {
                 int d = s[i] - '0';
                 if (d != 0) {
-                    // Positional value update: shift left and add
                     num = (num * 10 + d) % mod;
                     digitSum += d;
                 }
             }
-            // Final product calculation
-            long long product = (num % mod) * (digitSum % mod) % mod;
-            ans[qi] = (int)product;
+            ans[qi] = (num * (digitSum % mod)) % mod;
         }
-
         return ans;
     }
 };
 
 /*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚡ Complexity Analysis
+💡 Solution 2: Optimized Prefix Hash (O(N + Q))
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Required for large constraints ($N, Q \le 10^5$). 
+
+We use the Rolling Hash logic:
+To get the number in range [L, R], we take the prefix value at R and subtract 
+the prefix value at L-1, shifted left by the number of digits in the range.
+
+Formula: $Value(L, R) = (PrefNum[R] - PrefNum[L-1] \times 10^{count\_nonzero(L,R)}) \pmod M$
+*/
+
+
+
+class Solution {
+public:
+    vector<int> sumAndMultiply(string s, vector<vector<int>>& q) {
+        const int mod = 1000000007;
+        int n = s.length();
+        
+        // Prefix arrays for O(1) range queries
+        vector<long long> prefSum(n + 1, 0);   // Sum of non-zero digits
+        vector<long long> prefNum(n + 1, 0);   // Value of concatenated non-zero digits
+        vector<int> nzCount(n + 1, 0);         // Count of non-zero digits
+        vector<long long> pow10(n + 1, 1);     // Powers of 10 mod 10^9 + 7
+
+        // Precomputation - O(N)
+        for (int i = 0; i < n; i++) {
+            pow10[i + 1] = (pow10[i] * 10) % mod;
+            int d = s[i] - '0';
+            
+            prefSum[i + 1] = prefSum[i];
+            prefNum[i + 1] = prefNum[i];
+            nzCount[i + 1] = nzCount[i];
+
+            if (d != 0) {
+                prefSum[i + 1] = (prefSum[i] + d) % mod;
+                prefNum[i + 1] = (prefNum[i] * 10 + d) % mod;
+                nzCount[i + 1]++;
+            }
+        }
+
+        // Query processing - O(Q)
+        vector<int> ans;
+        for (auto& query : q) {
+            int l = query[0], r = query[1];
+            
+            // 1. Calculate Digit Sum in O(1)
+            long long dSum = (prefSum[r + 1] - prefSum[l] + mod) % mod;
+            
+            // 2. Calculate Concatenated Number in O(1)
+            int totalNzInRange = nzCount[r + 1] - nzCount[l];
+            long long num = (prefNum[r + 1] - (prefNum[l] * pow10[totalNzInRange] % mod) + mod) % mod;
+            
+            ans.push_back((num * dSum) % mod);
+        }
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis (Optimized)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⏰ Time Complexity: O(Q × N)
-   └─ In the worst case, for every query, we iterate over the entire string.
+⏰ Time Complexity: O(N + Q)
+   └─ Precomputation takes O(N). Each of the Q queries is answered in O(1).
    
-💾 Space Complexity: O(1) 
-   └─ Excluding the space for the output vector.
+💾 Space Complexity: O(N)
+   └─ We maintain 4 prefix arrays of size N to enable fast lookups.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚀 Optimization Strategy (For Large Constraints)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-To achieve O(N + Q), use:
-1. **Prefix Sum for Digit Sum**: `prefSum[i]` stores sum of non-zero digits up to `i`.
-   `sum(l, r) = prefSum[r] - prefSum[l-1]`.
-2. **Prefix Hash for Concatenation**: Treat the string of non-zero digits as a 
-   large number. 
-   `Value(l, r) = (prefNum[r] - prefNum[l-1] * 10^(count_of_nonzero(l, r))) % mod`.
-3. **Non-zero Counter**: A prefix array to count how many non-zero digits exist 
-   up to index `i` to know which power of 10 to use.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 */
