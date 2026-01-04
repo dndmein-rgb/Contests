@@ -1,0 +1,103 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 483
+📅 Date: January 4, 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3800. Minimum Cost to Make Two Binary Strings Equal
+📌 Link: https://leetcode.com/problems/minimum-cost-to-make-two-binary-strings-equal/
+🏷️ Difficulty: Hard
+🏆 Topics: Greedy, String, Math
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- Two binary strings `s` and `t` of length `n`.
+- Three costs: `flipCost` (change 0 to 1 or vice-versa), `swapCost` (swap two 
+  mismatched indices), and `crossCost` (an additional penalty for certain swaps).
+
+Goal:
+- Calculate the minimum cost to transform string `s` into string `t`.
+
+Key Insight:
+- There are two types of mismatches:
+    1. Type 1: `s[i] == '1'` and `t[i] == '0'`
+    2. Type 2: `s[i] == '0'` and `t[i] == '1'`
+- To equalize the strings, we can either:
+    - **Swap** a Type 1 and a Type 2 mismatch (fixing both at once).
+    - **Flip** individual bits.
+    - **Swap + Cross** pairs of the same type (fixing two Type 1s or two Type 2s).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Greedy Cost Minimization)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Count Mismatches**: Calculate `type1` (1 → 0) and `type2` (0 → 1) counts.
+2. **Pairing Opposite Types**:
+   - Every pair consisting of one Type 1 and one Type 2 can be resolved by a swap.
+   - Cost: `min(swapCost, 2 * flipCost)`. 
+   - We use `2 * flipCost` because flipping both bits individually might be cheaper.
+3. **Handling Remaining Mismatches**:
+   - After pairing, we have `remaining = |type1 - type2|` mismatches of the same type.
+   - We can resolve these in pairs. Cost: `min(swapCost + crossCost, 2 * flipCost)`.
+4. **Final Single Mismatch**:
+   - If `remaining` is odd, the last bit must be flipped. Cost: `flipCost`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+
+
+class Solution {
+public:
+    long long minimumCost(string s, string t,
+                         int flipCost, int swapCost, int crossCost) {
+        long long type1 = 0, type2 = 0;
+        int n = s.size();
+
+        // Identify mismatch types
+        for (int i = 0; i < n; i++) {
+            if (s[i] == '1' && t[i] == '0') type1++;
+            else if (s[i] == '0' && t[i] == '1') type2++;
+        }
+
+        long long mini = min(type1, type2);
+        long long maxi = max(type1, type2);
+        long long ans = 0;
+
+        // Step 1: Pair up Type 1 and Type 2 mismatches
+        ans += mini * min((long long)swapCost, 2LL * flipCost);
+
+        long long remaining = maxi - mini;
+
+        // Step 2: Resolve remaining same-type mismatches in pairs
+        ans += (remaining / 2) *
+               min((long long)swapCost + crossCost, 2LL * flipCost);
+
+        // Step 3: If one mismatch remains, it must be flipped
+        if (remaining % 2) ans += flipCost;
+
+        return ans;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N)
+   └─ A single pass through strings s and t to count mismatches.
+   
+💾 Space Complexity: O(1)
+   └─ Only a few long long variables used for counting and cost calculation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Optimization Note
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The use of 2LL ensures the calculation is done in long long precision, preventing 
+overflow before the comparison with the costs.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
