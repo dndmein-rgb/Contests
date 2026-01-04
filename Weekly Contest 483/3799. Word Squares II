@@ -1,0 +1,103 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 483
+📅 Date: January 4, 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3799. Word Squares II
+📌 Link: https://leetcode.com/problems/word-squares-ii/
+🏷️ Difficulty: Medium
+🏆 Topics: String, Brute Force, Backtracking
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- A list of words, all of the same length (specifically length 4 in this logic).
+
+Goal:
+- Find all unique sets of four words that can form a "Word Square" boundary.
+- The boundary is formed by a Top, Left, Right, and Bottom word.
+- The corners must match:
+    1. Top[0] == Left[0] (Top-Left corner)
+    2. Top[3] == Right[0] (Top-Right corner)
+    3. Bottom[0] == Left[3] (Bottom-Left corner)
+    4. Bottom[3] == Right[3] (Bottom-Right corner)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Nested Loop Validation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Permutation Search**: Use four nested loops to pick four distinct words from the input list.
+2. **Corner Validation**: Check if the characters at the meeting points (corners) of the four words are identical.
+3. **Storage**: If all four corner conditions are satisfied, add the combination `{top, left, right, bottom}` to the result.
+4. **Ordering**: Sort the final results lexicographically as required by the problem constraints.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+
+
+class Solution {
+public:
+    vector<vector<string>> wordSquares(vector<string>& words) {
+        int n = words.size();
+        vector<vector<string>> res;
+
+        // Nested loops to pick 4 distinct words
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == j) continue;
+                for (int k = 0; k < n; k++) {
+                    if (k == i || k == j) continue;
+                    for (int l = 0; l < n; l++) {
+                        if (l == i || l == j || l == k) continue;
+
+                        string top = words[i];
+                        string left = words[j];
+                        string right = words[k];
+                        string bottom = words[l];
+
+                        // Validate corner constraints for a 4x4 boundary
+                        // Top-Left: top[0] & left[0]
+                        // Top-Right: top[3] & right[0]
+                        // Bottom-Left: bottom[0] & left[3]
+                        // Bottom-Right: bottom[3] & right[3]
+                        if (top[0] == left[0] && 
+                            top[3] == right[0] &&
+                            bottom[0] == left[3] && 
+                            bottom[3] == right[3]) {
+                            
+                            res.push_back({top, left, right, bottom});
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Ensure the output is in lexicographical order
+        sort(res.begin(), res.end());
+        return res;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N⁴)
+   └─ N is the number of words. The four nested loops create N^4 combinations.
+   
+💾 Space Complexity: O(S)
+   └─ S is the number of valid word squares found and stored in the result vector.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Optimization Potential
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+For larger N, this can be optimized using a Trie (Prefix Tree) to skip 
+words that don't match the required corner characters early, rather than 
+checking all permutations.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
