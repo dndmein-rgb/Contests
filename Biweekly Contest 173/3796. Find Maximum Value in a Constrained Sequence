@@ -1,0 +1,110 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Biweekly Contest 173
+📅 Date: January 4, 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3796. Find Maximum Value in a Constrained Sequence
+📌 Link: https://leetcode.com/problems/find-maximum-value-in-a-constrained-sequence/
+🏷️ Difficulty: Hard
+🏆 Topics: Greedy, Dynamic Programming, Array
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- A sequence of length `n` starting at index 0.
+- `restrictions`: A list of pairs `[index, maxHeight]` that cap the value at a specific position.
+- `diff`: An array where `diff[i]` defines the maximum allowed difference between 
+  element `i` and `i+1`.
+
+Goal:
+- Find the maximum possible value that can exist anywhere in the sequence while 
+  satisfying all restrictions and local difference constraints.
+
+Key Insight:
+- The value at any index $i$ is limited by two things:
+    1. Its own explicit restriction.
+    2. The height of its neighbors plus the allowed difference to reach them.
+- This is a constraint propagation problem that can be solved with a forward 
+  and backward pass.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Two-Pass Greedy)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Initialization**: Initialize an array `maxAt` with a very large value ($10^9$), 
+   setting `maxAt[0] = 0` (or as per problem start constraints). Apply all 
+   explicit `restrictions` by taking the minimum.
+
+2. **Forward Pass**: Iterate from $0$ to $n-1$. The height at $i+1$ cannot exceed 
+   the height at $i$ plus the allowed difference:
+   `maxAt[i+1] = min(maxAt[i+1], maxAt[i] + diff[i])`
+
+3. **Backward Pass**: Iterate from $n-1$ down to $0$. The height at $i$ cannot 
+   exceed the height at $i+1$ plus the allowed difference:
+   `maxAt[i] = min(maxAt[i], maxAt[i+1] + diff[i])`
+
+4. **Result**: The maximum value in the final `maxAt` array is the highest 
+   possible point in the sequence.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+
+
+class Solution {
+public:
+    int findMaxVal(int n, vector<vector<int>>& restrictions, vector<int>& diff) {
+        // Use long long to prevent overflow during intermediate additions
+        vector<long long> maxAt(n, 1e15); 
+        maxAt[0] = 0; // Standard starting condition for these sequence problems
+
+        // Step 1: Apply explicit height restrictions
+        for (auto& res : restrictions) {
+            maxAt[res[0]] = min(maxAt[res[0]], (long long)res[1]);
+        }
+
+        // Step 2: Forward Pass (Left to Right)
+        // Constraints propagate from index i to i+1
+        for (int i = 0; i < n - 1; i++) {
+            maxAt[i + 1] = min(maxAt[i + 1], maxAt[i] + diff[i]);
+        }
+
+        // Step 3: Backward Pass (Right to Left)
+        // Constraints propagate from index i+1 to i
+        for (int i = n - 2; i >= 0; i--) {
+            maxAt[i] = min(maxAt[i], maxAt[i + 1] + diff[i]);
+        }
+
+        // Step 4: Find the global maximum among all valid heights
+        long long result = 0;
+        for (long long val : maxAt) {
+            result = max(result, val);
+        }
+
+        return (int)result;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N + R)
+   └─ N is the sequence length (two passes), R is the number of restrictions.
+   
+💾 Space Complexity: O(N)
+   └─ We store one `maxAt` array of size N.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Optimization Note
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This approach is highly efficient for large N ($10^5$). If the number of 
+restrictions R is much smaller than N, one could optimize further using 
+mathematical formulas between restricted points, but the two-pass greedy 
+approach is the most robust and standard way to solve this.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
