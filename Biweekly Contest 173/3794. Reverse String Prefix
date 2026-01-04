@@ -1,0 +1,57 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Biweekly Contest 173
+📅 Date: January 4, 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3794. Reverse String Prefix
+📌 Link: https://leetcode.com/problems/reverse-string-prefix/
+🏷️ Difficulty: Easy
+🏆 Topics: Two Pointers, String
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Given a string 's' and an integer 'k', reverse the segment of 's' that starts 
+at index 0 and ends at index k-1.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (In-Place / O(1) Extra Space)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Instead of creating a string `rev`, we modify the parameter `s` directly.
+2. In C++, strings are mutable. By passing by value (as in the signature) 
+   or using the existing memory, we save on auxiliary allocations.
+3. Using two pointers (implicitly via std::reverse) to swap elements 
+   from both ends of the prefix until they meet in the middle.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+
+
+class Solution {
+public:
+    string reversePrefix(string s, int k) {
+        // Constraints usually imply k <= s.length(), but we check for safety
+        if (k > s.length()) k = s.length();
+        
+        // In-place reversal of the first k characters
+        // s.begin() + k is the first element NOT to be reversed
+        reverse(s.begin(), s.begin() + k);
+        
+        return s;
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(k)
+   └─ We perform exactly k/2 swaps.
+   
+💾 Space Complexity: O(1)
+   └─ We modify the input string directly without any extra data structures.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
