@@ -1,0 +1,81 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Contest: LeetCode Weekly Contest 483
+📅 Date: January 4, 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3798. Largest Even Number
+📌 Link: https://leetcode.com/problems/largest-even-number/
+🏷️ Difficulty: Easy
+🏆 Topics: String, Greedy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- A string `s` representing a sequence of digits.
+
+Goal:
+- Find the largest prefix of the string that forms an even number.
+- In this specific implementation, we are looking for the rightmost occurrence 
+  of the digit '2' to determine the boundary of the largest even prefix.
+
+Key Insight:
+- An even number must end in an even digit (0, 2, 4, 6, 8). 
+- To find the "largest" prefix (in terms of length/magnitude), we should find 
+  the last possible even digit in the string and truncate everything after it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Greedy Search)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Find Rightmost Even Digit**: Iterate through the string to find the last 
+   index where the character is '2'.
+2. **Truncate**: If found, return the substring from index 0 to that index.
+3. **Edge Case**: If no '2' is found, return an empty string.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+
+
+class Solution {
+public:
+    string largestEven(string s) {
+        int n = s.length();
+        int lastTwoIdx = -1;
+        
+        // Traverse to find the last occurrence of '2'
+        for (int i = 0; i < n; i++) {
+            if (s[i] == '2') {
+                lastTwoIdx = i;
+            }
+        }
+        
+        // If no '2' exists, no even prefix (ending in 2) can be formed
+        if (lastTwoIdx == -1) return "";
+
+        // Return the prefix including the last '2'
+        return s.substr(0, lastTwoIdx + 1);
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N)
+   └─ One pass to find the index and one pass to create the substring.
+   
+💾 Space Complexity: O(N)
+   └─ Space required to store and return the resulting substring.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Note on Constraints
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+If the problem allows any even digit (0, 4, 6, 8), the condition `s[i] == '2'` 
+should be updated to `(s[i] - '0') % 2 == 0`.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
