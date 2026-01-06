@@ -1,0 +1,78 @@
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗓️ Weekly Contest 478: 3760. Maximum Substrings With Distinct Start
+📅 Date: January 6, 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Problem: 3760. Maximum Substrings With Distinct Start
+📌 Link: https://leetcode.com/problems/maximum-substrings-with-distinct-start/
+🏷️ Difficulty: Easy/Medium
+🏆 Topics: String, Hash Table, Greedy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 Problem Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+- A string `s`.
+- We need to find the maximum number of substrings we can pick such that:
+    1. Each substring starts with a unique character (no two substrings start with the same char).
+    2. Each substring must be a valid part of the original string.
+
+Key Insight:
+- To maximize the number of substrings, we only care about the **starting character**.
+- Since each substring must start with a different character, the maximum number of such substrings is simply the number of **unique characters** present in the string.
+- For every unique character $c$ in $s$, we can always form at least one substring (even just the single character "c" itself) starting at its first occurrence.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Approach (Set for Unique Counting)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Scan the String**: Iterate through each character of the string `s`.
+2. **Track Uniqueness**: Use an `unordered_set` or a boolean array of size 26 (if only lowercase English letters) to keep track of characters we have seen.
+3. **Return Count**: The size of the set (total unique characters) represents the maximum number of substrings with distinct starting characters.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+class Solution {
+public:
+    int maxDistinct(string s) {
+        // We use an unordered_set to store unique characters found in the string.
+        // Each unique character can serve as the start of exactly one substring 
+        // in our final collection.
+        unordered_set<char> distinct;
+        
+        for (char& c : s) {
+            distinct.insert(c);
+        }
+        
+        // The maximum number of substrings with distinct starts is the count 
+        // of unique characters available in the string.
+        return distinct.size();
+    }
+};
+
+/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Complexity Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Time Complexity: O(N)
+   └─ We traverse the string once. Set operations (insert) are average O(1).
+   
+💾 Space Complexity: O(1) or O(K)
+   └─ Where K is the size of the alphabet (e.g., 26 for lowercase or 256 for ASCII).
+      Since K is constant, it is effectively O(1).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Example Walkthrough (s = "abacaba")
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Unique characters are {'a', 'b', 'c'}.
+2. Substrings could be: "a", "b", "c".
+3. Each starts with a different character.
+4. Result: 3.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
