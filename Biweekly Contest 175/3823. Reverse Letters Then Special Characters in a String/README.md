@@ -6,6 +6,12 @@ Reverse the lowercase letters among themselves and reverse the special character
 while keeping their original positions based on character type.
 
 ---
+## Constraints
+- 1 ≤ s.length ≤ 10⁵
+- `s` consists of lowercase English letters and special characters
+- Only characters `'a'` to `'z'` are considered letters
+
+---
 
 ## Approach
 1. Traverse the string and separate:
