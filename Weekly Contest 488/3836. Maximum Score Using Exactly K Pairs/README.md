@@ -1,37 +1,39 @@
-# [3836. Maximum Score Using Exactly K Pairs](https://leetcode.com/problems/maximum-score-using-exactly-k-pairs)
+# [3835. Count Subarrays With Cost Less Than or Equal to K](https://leetcode.com/problems/count-subarrays-with-cost-less-than-or-equal-to-k)
 
 ## Problem Statement
-You are given an integer array `nums` and an integer `k`.  
-Count the number of subarrays such that:
+You are given an integer array `nums` and an integer `k`.
 
-(maximum element − minimum element) × (length of subarray) ≤ k
+The **cost** of a subarray is defined as:  
+(max element of subarray − min element of subarray) × length of subarray
 
-Return the total number of such subarrays.
+
+Return the total number of subarrays whose cost is **less than or equal to `k`**.
 
 ---
 
 ## Constraints
 - 1 ≤ nums.length ≤ 10⁵
 - 1 ≤ nums[i] ≤ 10⁹
-- 1 ≤ k ≤ 10¹⁸
+- 0 ≤ k ≤ 10¹⁸
 
 ---
 
 ## Approach
-- Use a **sliding window** technique with two **monotonic deques**:
-  - One deque to maintain the maximum element in the current window
-  - One deque to maintain the minimum element in the current window
-- Expand the window using a right pointer.
-- Shrink the window from the left whenever the condition is violated.
-- For each valid window ending at index `r`, all subarrays starting from `l` to `r` are valid.
+- Use the **sliding window** technique.
+- Maintain:
+  - A **monotonic decreasing deque** to track the maximum element.
+  - A **monotonic increasing deque** to track the minimum element.
+- Expand the window to the right.
+- If the cost exceeds `k`, shrink the window from the left until it becomes valid.
+- For each right index, count all valid subarrays ending at that index.
 
 ---
 
 ## Complexity Analysis
-- **Time Complexity:** O(n)
-- **Space Complexity:** O(n) (for deques)
+- **Time Complexity:** `O(n)` (each element enters and leaves the deque once)
+- **Space Complexity:** `O(n)` (for deques)
 
 ---
 
-## Key Insight
-Efficiently tracking the maximum and minimum in a sliding window allows us to validate subarrays in linear time without recomputing values repeatedly.
+## Key Idea
+Efficiently maintaining the minimum and maximum in a sliding window allows us to v
